@@ -3,14 +3,14 @@
 import sys
 from pathlib import Path
 import subprocess as sp
-from time import sleep
+import time
 import shutil
 
 from nbrun import run_notebook
 
 
 convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
-convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
+#convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
 analysis_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
@@ -19,6 +19,10 @@ local_archive_basedir = '/mnt/archive/Antonio/'   # Local dir for archiving data
 remote_archive_basedir = '/mnt/wAntonio/'         # Remote dir for archiving data
 
 DRY_RUN = False     # Set to True for a debug dry-run
+
+
+def timestamp():
+    print('\n-- TIMESTAMP %s\n' % time.ctime())
 
 
 def replace_basedir(path, orig_basedir, new_basedir):
@@ -116,7 +120,7 @@ def convert(filepath, basedir):
 def run_analysis(fname):
     """
     Arguments:
-        filepath (Path): full path of HDF5 file to be analyzed.
+        fname (Path): full path of HDF5 file to be analyzed.
     """
     print('* Running smFRET analysis...', flush=True)
     # Name of the output notebook is the same of data file
@@ -136,39 +140,52 @@ def remove_temp_files(folder_to_remove):
     assert local_archive_basedir not in str(folder_to_remove)
     print('* Removing "%s" (waiting 5 seconds to cancel) ' % folder_to_remove,
           end='', flush=True)
-    for i in range(1, 6):
-        sleep(1)
-        print('%d ' % i, end='', flush=True)
-    sleep(1)
-    print()
+    try:
+        for i in range(1, 6):
+            time.sleep(1)
+            print('%d ' % i, end='', flush=True)
+        time.sleep(1)
+        print()
+    except KeyboardInterrupt:
+        print('\n- Removing files canceled!\n')
+    else:
+        # Remove files
+        if not DRY_RUN:
+            shutil.rmtree(folder_to_remove)
+        print('  [DONE]. \n')
 
-    # Remove files
-    if not DRY_RUN:
-        shutil.rmtree(folder_to_remove)
-    print('  [DONE]. \n')
 
 
 if __name__ == '__main__':
-    print()
-    if DRY_RUN:
-        print('DRY RUN\n')
-    msg = 'One command-line argument expected. Received %d instead.'
-    assert len(sys.argv) == 2, msg % (len(sys.argv) - 1)
+    title_msg = 'DATA PROCESSING STARTED'
+    print('\n%s\n' % title_msg)
+
+    msg = '1 or 2 command-line argument expected. Received %d instead.'
+    assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
+
+    if len(sys.argv) == 3:
+        assert sys.argv[2] == '--dry-run', 'Second argument can only be "--dry-run".'
+        DRY_RUN = True
 
     fname = Path(sys.argv[1])
     assert fname.is_file(), 'File not found: %s' % fname
     
+    timestamp()
     assert remote_origin_basedir in str(fname)
     copied_fname = copy_files_to_ramdisk(fname, remote_origin_basedir, temp_basedir)
     
+    timestamp()
     assert temp_basedir in str(copied_fname)
     h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir)
     
+    timestamp()
     assert h5_fname.is_file()
     run_analysis(h5_fname)
     
+    timestamp()
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
     
+    timestamp()
     remove_temp_files(h5_fname.parent)
 
     
