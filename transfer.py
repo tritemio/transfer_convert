@@ -84,12 +84,6 @@ def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
     filecopy(nb_conv_fname, dest_nb_conv_fname,
              msg='conversion notebook to archive')
 
-    # Copy cache file if present
-    cache_fname = Path(h5_fname.parent, h5_fname.stem + '_cache.hdf5')
-    if cache_fname.is_file():
-        dest_cache_fname = replace_basedir(cache_fname, temp_basedir, local_archive_basedir)
-        filecopy(cache_fname, dest_cache_fname, msg='cache file to archive')
-
 
 def convert(filepath, basedir):
     """
@@ -131,7 +125,7 @@ def run_analysis(fname):
         run_notebook(analysis_notebook_name, out_notebook_path=nb_out_path,
                      nb_kwargs={'fname': str(fname)})
     print('  [DONE].\n')
-    
+
     
 def remove_temp_files(folder_to_remove):
     # Safety checks
@@ -157,9 +151,6 @@ def remove_temp_files(folder_to_remove):
 
 
 if __name__ == '__main__':
-    title_msg = 'DATA PROCESSING STARTED'
-    print('\n%s\n' % title_msg)
-
     msg = '1 or 2 command-line argument expected. Received %d instead.'
     assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
 
@@ -170,6 +161,9 @@ if __name__ == '__main__':
     fname = Path(sys.argv[1])
     assert fname.is_file(), 'File not found: %s' % fname
     
+    title_msg = 'PROCESSING: %s' % fname.name
+    print('\n\n%s' % title_msg)
+
     timestamp()
     assert remote_origin_basedir in str(fname)
     copied_fname = copy_files_to_ramdisk(fname, remote_origin_basedir, temp_basedir)
@@ -179,13 +173,14 @@ if __name__ == '__main__':
     h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir)
     
     timestamp()
-    assert h5_fname.is_file()
-    run_analysis(h5_fname)
-    
-    timestamp()
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
     
     timestamp()
     remove_temp_files(h5_fname.parent)
+
+    timestamp()
+    h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
+    assert h5_fname_archive.is_file()
+    run_analysis(h5_fname_archive)
 
     
