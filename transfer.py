@@ -14,7 +14,7 @@ convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempf
 analysis_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
-temp_basedir = '/mnt/ramdisk/'                    # Local temp dir with very fast access 
+temp_basedir = '/mnt/ramdisk/'                    # Local temp dir with very fast access
 local_archive_basedir = '/mnt/archive/Antonio/'   # Local dir for archiving data
 remote_archive_basedir = '/mnt/wAntonio/'         # Remote dir for archiving data
 
@@ -40,13 +40,15 @@ def filecopy(source, dest, msg=''):
 
 def copy_files_to_ramdisk(fname, orig_basedir, dest_basedir=temp_basedir):
     """
+    Copy a DAT and YML file pair to ramdisk folder.
+
     Arguments:
         fname (Path): full path of DAT file to be copied.
     """
     # Create destination folder if not existing
     dest_fname = replace_basedir(fname, orig_basedir, dest_basedir)
     dest_fname.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Copy data
     filecopy(fname, dest_fname, msg='DAT file to ramdisk')
 
@@ -59,24 +61,26 @@ def copy_files_to_ramdisk(fname, orig_basedir, dest_basedir=temp_basedir):
 
 def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
     """
+    Copy Photon-HDF5, YML, DAT, and conversion notebooks to archive folder.
+
     Arguments:
         h5_fname (Path): full path of HDF5 file to be copied into archive
         orig_fname (Path): full path of DAT file to be copied into archive
         nb_conv_fname (Path): full path of the executed conversion notebook
     """
-    # Create destination folder if not existing and compute filenames 
+    # Create destination folder if not existing and compute filenames
     dest_h5_fname = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
     dest_h5_fname.parent.mkdir(parents=True, exist_ok=True)
     dest_nb_conv_fname = replace_basedir(nb_conv_fname, temp_basedir, local_archive_basedir)
     dest_orig_fname = replace_basedir(orig_fname, temp_basedir, local_archive_basedir)
-    
+
     # Copy HDF5 file
     filecopy(h5_fname, dest_h5_fname, msg='HDF5 file to archive')
 
     # Copy metadata
     filecopy(orig_fname.with_suffix('.yml'), dest_orig_fname.with_suffix('.yml'),
              msg='YAML file to archive')
-    
+
     # Copy DAT file
     filecopy(orig_fname, dest_orig_fname, msg='DAT file to archive')
 
@@ -87,32 +91,36 @@ def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
 
 def convert(filepath, basedir):
     """
+    Convert a DAT file to Photon-HDF5.
+
     Arguments:
         filepath (Path): full path of DAT file to be converted.
     """
     print('* Converting input file to Photon-HDF5...', flush=True)
-    
+
     # Name of the output notebook
     suffix = 'inplace' if 'inplace' in convert_notebook_name else 'tf'
     nb_out_path = Path(filepath.parent, filepath.stem + '_conversion_%s.ipynb' % suffix)
-    
+
     # Compute input file name relative to the basedir
     # This is the format of the input file-name required by the conversion notebook
     fname_nb_input = str(replace_basedir(filepath, basedir, ''))
-    
+
     # Convert file to Photon-HDF5
     if not DRY_RUN:
         run_notebook(convert_notebook_name, out_notebook_path=nb_out_path,
                      nb_kwargs={'fname': fname_nb_input})
 
     print('  [DONE].\n')
-    
+
     h5_fname = Path(filepath.parent, filepath.stem + '_%s.hdf5' % suffix)
     return h5_fname, nb_out_path
 
 
 def run_analysis(fname):
     """
+    Run basic smFRET analysis on the passed Photon-HDF5 file.
+
     Arguments:
         fname (Path): full path of HDF5 file to be analyzed.
     """
@@ -126,8 +134,9 @@ def run_analysis(fname):
                      nb_kwargs={'fname': str(fname)})
     print('  [DONE].\n')
 
-    
+
 def remove_temp_files(folder_to_remove):
+    """Remove temporary folder."""
     # Safety checks
     assert folder_to_remove.is_dir()
     assert remote_archive_basedir not in str(folder_to_remove)
@@ -149,32 +158,31 @@ def remove_temp_files(folder_to_remove):
         print('  [DONE]. \n')
 
 
+def process(fname, dry_run=False):
+    """
+    This is the main function to all to copy the input DAT file to the temp
+    folder, convert it to Photon-HDF5, copy all the files to the archive folder
+    and run a basic smFRET analysis.
+    """
+    global DRY_RUN
+    DRY_RUN = DRY_RUN or dry_run
 
-if __name__ == '__main__':
-    msg = '1 or 2 command-line argument expected. Received %d instead.'
-    assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
-
-    if len(sys.argv) == 3:
-        assert sys.argv[2] == '--dry-run', 'Second argument can only be "--dry-run".'
-        DRY_RUN = True
-
-    fname = Path(sys.argv[1])
     assert fname.is_file(), 'File not found: %s' % fname
-    
+
     title_msg = 'PROCESSING: %s' % fname.name
     print('\n\n%s' % title_msg)
 
     timestamp()
     assert remote_origin_basedir in str(fname)
     copied_fname = copy_files_to_ramdisk(fname, remote_origin_basedir, temp_basedir)
-    
+
     timestamp()
     assert temp_basedir in str(copied_fname)
     h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir)
-    
+
     timestamp()
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
-    
+
     timestamp()
     remove_temp_files(h5_fname.parent)
 
@@ -182,5 +190,16 @@ if __name__ == '__main__':
     h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
     assert h5_fname_archive.is_file()
     run_analysis(h5_fname_archive)
+    timestamp()
 
-    
+
+if __name__ == '__main__':
+    msg = '1 or 2 command-line argument expected. Received %d instead.'
+    assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
+
+    if len(sys.argv) == 3:
+        assert sys.argv[2] == '--dry-run', 'Second argument can only be "--dry-run".'
+        dry_run = True
+
+    fname = Path(sys.argv[1])
+    process(fname, dry_run=dry_run)
