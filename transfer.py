@@ -194,7 +194,7 @@ def process(fname, dry_run=False):
 
 
 if __name__ == '__main__':
-    msg = '1 or 2 command-line argument expected. Received %d instead.'
+    msg = '1 or 2 command-line arguments expected. Received %d instead.'
     assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
 
     if len(sys.argv) == 3:
