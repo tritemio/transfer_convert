@@ -135,12 +135,12 @@ def run_analysis(fname):
     print('  [DONE].\n', flush=True)
 
 
-def remove_temp_files(folder_to_remove):
+def remove_temp_files(dat_fname):
     """Remove temporary folder."""
     # Safety checks
-    assert folder_to_remove.is_dir()
-    assert remote_archive_basedir not in str(folder_to_remove)
-    assert local_archive_basedir not in str(folder_to_remove)
+    folder = h5_fname.parent
+    assert remote_archive_basedir not in str(folder)
+    assert local_archive_basedir not in str(folder)
     print('* Removing "%s" (waiting 5 seconds to cancel) ' % folder_to_remove,
           end='', flush=True)
     try:
@@ -154,7 +154,13 @@ def remove_temp_files(folder_to_remove):
     else:
         # Remove files
         if not DRY_RUN:
-            shutil.rmtree(folder_to_remove)
+            os.remove(dat_fname)
+            extentions = ('_tf.hdf5', '_inplace.hdf5', '.yml')
+            for ext in extensions:
+                curr_file = Path(dat_fname.parent, dat_fname.stem + ext)
+                if curr_file.is_file():
+                    os.remove(curr_file)
+
         print('  [DONE]. \n', flush=True)
 
 
@@ -184,7 +190,7 @@ def process(fname, dry_run=False):
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
 
     timestamp()
-    remove_temp_files(h5_fname.parent)
+    remove_temp_files(copied_fname)
 
     timestamp()
     h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
