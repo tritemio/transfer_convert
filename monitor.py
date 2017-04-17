@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, os
+import sys
 from pathlib import Path
 import time
 from multiprocessing import Pool
@@ -74,18 +74,19 @@ def batch_process(folder, dry_run=False):
 
 
 def help():
-    msg = """\
+    msg = """
     monitor.py
 
     This script monitors a folder and converts DAT files to Photon-HDF5
-    if a metadata YAML file is found in the same folder.
+    if a metadata YAML file with the same name (except extension) is found
+    in the same folder.
 
     USAGE
     -----
 
     python monitor.py <folder> [--batch] [--dry-run]
 
-    Arguments:
+    Optional Arguments:
         --batch
             Process all the DAT/YML files in the folder (batch-mode). Without
             this option only new files created after the monitor started are
@@ -102,7 +103,7 @@ if __name__ == '__main__':
     args = sys.argv[1:].copy()
     if len(args) == 0 or '-h' in args or '--help' in args:
         help()
-        os.exit(0)
+        sys.exit(0)
     msg = '1 to 3 command-line arguments expected. Received %d instead.'
     assert 1 <= len(args) <= 3, msg % len(args)
 
