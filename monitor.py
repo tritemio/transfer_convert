@@ -12,8 +12,8 @@ import transfer
 def get_new_files(folder, init_filelist=None):
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('**/*.yml')
-            if f.with_suffix('.dat').is_file() and f not in init_filelist]
+    return [f for f in folder.glob('**/*.dat')
+            if f.with_suffix('.yml').is_file() and f not in init_filelist]
 
 
 def complete_task(fname, dry_run=False):
@@ -24,7 +24,6 @@ def complete_task(fname, dry_run=False):
 
 
 def start_monitoring(folder, dry_run=False):
-    complete_task_local = partial(complete_task, dry_run=dry_run)
     title_msg = 'Monitoring %s' % folder.name
     print('\n\n%s' % title_msg)
 
@@ -42,11 +41,10 @@ def start_monitoring(folder, dry_run=False):
                 for i in range(20):
                     time.sleep(3)
                     newfiles = get_new_files(folder, init_filelist)
-                    for newfile_yml in newfiles:
-                        newfile_dat = newfile_yml.with_suffix('.dat')
+                    for newfile in newfiles:
                         pool.apply_async(transfer.process_int,
-                                         (newfile_dat, dry_run),
-                                         callback=complete_task_local)
+                                         (newfile, dry_run),
+                                         callback=complete_task)
                     init_filelist += newfiles
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
@@ -59,15 +57,19 @@ def batch_process(folder, dry_run=False):
     title_msg = 'Monitoring %s' % folder.name
     print('\n\n%s' % title_msg)
 
-    init_filelist = get_new_files(folder)
+    filelist = get_new_files(folder)
+
+    print('- The following files will be processed in batch:')
+    for f in filelist:
+        print('  %s' % f)
+    print()
 
     with Pool(processes=4) as pool:
         try:
-            for newfile in newfiles:
-                pool.apply_async(transfer.process_int, (newfile, dry_run),
-                                 callback=copy_log_local)
+            pool.starmap(transfer.process_int, [(f, dry_run) for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
+        time.sleep(1)  # on dry-runs tasks my be killed before being started
     print('Closing subprocess pool.', flush=True)
 
 
@@ -108,6 +110,7 @@ if __name__ == '__main__':
     dry_run = False
     if '--dry-run' in args:
         dry_run = True
+        complete_task = partial(complete_task, dry_run=dry_run)
         args.pop(args.index('--dry-run'))
     batch = False
     if '--batch' in args:

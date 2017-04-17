@@ -22,7 +22,7 @@ DRY_RUN = False     # Set to True for a debug dry-run
 
 
 def timestamp():
-    print('\n-- TIMESTAMP %s\n' % time.ctime())
+    print('\n-- TIMESTAMP %s\n' % time.ctime(), flush=True)
 
 
 def replace_basedir(path, orig_basedir, new_basedir):
@@ -35,7 +35,7 @@ def filecopy(source, dest, msg=''):
         ret = sp.call(['cp', '-av', source, dest])
     else:
         ret = 'DRY RUN'
-    print('  [DONE]. Return code %s\n' % ret)
+    print('  [DONE]. Return code %s\n' % ret, flush=True)
 
 
 def copy_files_to_ramdisk(fname, orig_basedir, dest_basedir=temp_basedir):
@@ -111,7 +111,7 @@ def convert(filepath, basedir):
         run_notebook(convert_notebook_name, out_notebook_path=nb_out_path,
                      nb_kwargs={'fname': fname_nb_input})
 
-    print('  [DONE].\n')
+    print('  [DONE].\n', flush=True)
 
     h5_fname = Path(filepath.parent, filepath.stem + '_%s.hdf5' % suffix)
     return h5_fname, nb_out_path
@@ -132,7 +132,7 @@ def run_analysis(fname):
     if not DRY_RUN:
         run_notebook(analysis_notebook_name, out_notebook_path=nb_out_path,
                      nb_kwargs={'fname': str(fname)})
-    print('  [DONE].\n')
+    print('  [DONE].\n', flush=True)
 
 
 def remove_temp_files(folder_to_remove):
@@ -150,12 +150,12 @@ def remove_temp_files(folder_to_remove):
         time.sleep(1)
         print()
     except KeyboardInterrupt:
-        print('\n- Removing files canceled!\n')
+        print('\n- Removing files canceled!\n', flush=True)
     else:
         # Remove files
         if not DRY_RUN:
             shutil.rmtree(folder_to_remove)
-        print('  [DONE]. \n')
+        print('  [DONE]. \n', flush=True)
 
 
 def process(fname, dry_run=False):
@@ -170,7 +170,7 @@ def process(fname, dry_run=False):
     assert fname.is_file(), 'File not found: %s' % fname
 
     title_msg = 'PROCESSING: %s' % fname.name
-    print('\n\n%s' % title_msg)
+    print('\n\n%s' % title_msg, flush=True)
 
     timestamp()
     assert remote_origin_basedir in str(fname)
@@ -202,7 +202,7 @@ def process_int(fname, dry_run=False):
         print('Worker for "%s" got exception:\n%s' % (fname, e.message), flush=True)
     print('Processing of "%s" completed.' % fname, flush=True)
     return ret
-    
+
 
 if __name__ == '__main__':
     msg = '1 or 2 command-line arguments expected. Received %d instead.'
