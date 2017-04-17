@@ -3,6 +3,7 @@ Test/mockup for the multiprocessing scheme.
 """
 
 from multiprocessing import Pool
+from functools import partial
 import time
 import sys
 import random
@@ -27,13 +28,15 @@ def process(newfile):
     return newfile
 
 
-def copy_log(res):
-    print('callback for file %d' % res, flush=True)
+def copy_log(res, dry_run=False):
+    print('callback for file %d () dry_run=%s' % (res, dry_run), flush=True)
     with open('%s.txt' % res) as f:
         print(f.readlines(), flush=True)
 
 
 if __name__ == '__main__':
+    dry_run = True
+    copy_log = partial(copy_log, dry_run=dry_run)
     # start 4 worker processes
     with Pool(processes=4) as pool:
         for i in range(5):

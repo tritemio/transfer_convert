@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 import time
 from multiprocessing import Pool
+from functools import partial
 import subprocess as sp
 
 import transfer
@@ -26,14 +27,16 @@ def spawn_process(filename):
     sp.Popen([cmd], shell=False)
 
 
-def copy_log(res):
-    print('Processing finished %d' % res, flush=True)
-    # TODO copy log file
+def copy_log(fname, dry_run=False):
+    print('Processing finished for "%d"' % fname, flush=True)
+    dest = transfer.replace_basedir(fname, transfer.temp_basedir,
+                                    transfer.local_archive_basedir)
+    transfer.filecopy(fname, dest)
 
 
-def start_monitoring(folder):
+def start_monitoring(folder, dry_run=False):
     assert folder.is_dir(), 'Path not found: %s' % folder
-
+    copy_log = partial(copy_log, dry_run=dry_run)
     title_msg = 'Monitoring %s' % folder.name
     print('\n\n%s' % title_msg)
 
@@ -50,7 +53,8 @@ def start_monitoring(folder):
                 time.sleep(3)
                 newfiles = get_new_files(folder, init_filelist)
                 for newfile in newfiles:
-                    pool.apply_async(transfer.process, (newfile,), callback=copy_log)
+                    pool.apply_async(transfer.process, (newfile, dry_run),
+                                     callback=copy_log)
 
 
 if __name__ == '__main__':
@@ -62,4 +66,4 @@ if __name__ == '__main__':
         dry_run = True
 
     folder = Path(sys.argv[1])
-    start_monitoring(folder)
+    start_monitoring(folder, dry_run)

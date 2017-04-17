@@ -191,6 +191,7 @@ def process(fname, dry_run=False):
     assert h5_fname_archive.is_file()
     run_analysis(h5_fname_archive)
     timestamp()
+    return fname
 
 
 if __name__ == '__main__':
