@@ -17,7 +17,7 @@ def get_new_files(folder, init_filelist=None):
 
 
 def complete_task(fname, dry_run=False):
-    print('Completed processing for "%d"' % fname, flush=True)
+    print('Completed processing for "%s"' % fname, flush=True)
     #dest = transfer.replace_basedir(fname, transfer.temp_basedir,
     #                                transfer.local_archive_basedir)
     #transfer.filecopy(fname, dest) # filecopy does not have a dry_run arg
@@ -35,7 +35,7 @@ def start_monitoring(folder, dry_run=False):
         print('  %s' % f)
     print()
 
-    with Pool(processes=1) as pool:
+    with Pool(processes=4) as pool:
         try:
             while True:
                 transfer.timestamp()
@@ -69,6 +69,7 @@ def batch_process(folder, dry_run=False):
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
+
 
 def help():
     msg = """\
@@ -109,12 +110,12 @@ if __name__ == '__main__':
         dry_run = True
         args.pop(args.index('--dry-run'))
     batch = False
-    if '--batch' in in sys.argv[1:]:
+    if '--batch' in args:
         batch = True
         args.pop(args.index('--batch'))
     assert len(args) == 1
 
-    folder = Path(arg[0])
+    folder = Path(args[0])
     assert folder.is_dir(), 'Path not found: %s' % folder
     if batch:
         batch_process(folder, dry_run)

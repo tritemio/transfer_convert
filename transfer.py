@@ -195,12 +195,14 @@ def process(fname, dry_run=False):
 
 
 def process_int(fname, dry_run=False):
+    ret = None
     try:
-        process(fname, dry_run=dry_run)
+        ret = process(fname, dry_run=dry_run)
     except Exception as e:
         print('Worker for "%s" got exception:\n%s' % (fname, e.message), flush=True)
     print('Processing of "%s" completed.' % fname, flush=True)
-
+    return ret
+    
 
 if __name__ == '__main__':
     msg = '1 or 2 command-line arguments expected. Received %d instead.'
