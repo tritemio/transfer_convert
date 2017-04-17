@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys
+import sys, os
 from pathlib import Path
 import subprocess as sp
 import time
@@ -194,6 +194,14 @@ def process(fname, dry_run=False):
     return fname
 
 
+def process_int(fname, dry_run=False):
+    try:
+        process(fname, dry_run=dry_run)
+    except Exception as e:
+        print('Worker for "%s" got exception:\n%s' % (fname, e), flush=True)
+    os.exit(2)
+
+
 if __name__ == '__main__':
     msg = '1 or 2 command-line arguments expected. Received %d instead.'
     assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
@@ -203,4 +211,5 @@ if __name__ == '__main__':
         dry_run = True
 
     fname = Path(sys.argv[1])
-    process(fname, dry_run=dry_run)
+    process_int(fname, dry_run=dry_run)
+    print('Closing worker for "%s"' % fname, flush=True)

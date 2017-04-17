@@ -36,25 +36,31 @@ def copy_log(fname, dry_run=False):
 
 def start_monitoring(folder, dry_run=False):
     assert folder.is_dir(), 'Path not found: %s' % folder
-    copy_log = partial(copy_log, dry_run=dry_run)
+    copy_log_local = partial(copy_log, dry_run=dry_run)
     title_msg = 'Monitoring %s' % folder.name
     print('\n\n%s' % title_msg)
 
     init_filelist = get_new_files(folder)
 
     print('- The following files are present at startup and will be skipped:')
-    print(init_filelist)
+    for f in init_filelist:
+        print('  %s' % f)
     print()
 
-    with Pool(processes=4) as pool:
-        while True:
-            transfer.timestamp()
-            for i in range(20):
-                time.sleep(3)
-                newfiles = get_new_files(folder, init_filelist)
-                for newfile in newfiles:
-                    pool.apply_async(transfer.process, (newfile, dry_run),
-                                     callback=copy_log)
+    with Pool(processes=1) as pool:
+        try:
+            while True:
+                transfer.timestamp()
+                for i in range(20):
+                    time.sleep(3)
+                    newfiles = get_new_files(folder, init_filelist)
+                    for newfile in newfiles:
+                        pool.apply_async(transfer.process_int, (newfile, dry_run),
+                                         callback=copy_log_local)
+                    init_filelist += newfiles
+        except KeyboardInterrupt:
+            print('\n>>> Got keyboard interrupt.\n', flush=True)
+    print('Closing subprocess pool.', flush=True)
 
 
 if __name__ == '__main__':
@@ -67,3 +73,4 @@ if __name__ == '__main__':
 
     folder = Path(sys.argv[1])
     start_monitoring(folder, dry_run)
+    print('Monitor execution end.', flush=True)
