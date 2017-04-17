@@ -198,8 +198,8 @@ def process_int(fname, dry_run=False):
     try:
         process(fname, dry_run=dry_run)
     except Exception as e:
-        print('Worker for "%s" got exception:\n%s' % (fname, e), flush=True)
-    os.exit(2)
+        print('Worker for "%s" got exception:\n%s' % (fname, e.message), flush=True)
+    print('Processing of "%s" completed.', flush=True)
 
 
 if __name__ == '__main__':
