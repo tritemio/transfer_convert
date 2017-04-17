@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-import sys, os
+import sys
+import os
 from pathlib import Path
 import subprocess as sp
 import time
-import shutil
 
 from nbrun import run_notebook
 
 
 convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
-#convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
+# convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
 analysis_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
@@ -138,10 +138,10 @@ def run_analysis(fname):
 def remove_temp_files(dat_fname):
     """Remove temporary folder."""
     # Safety checks
-    folder = h5_fname.parent
+    folder = dat_fname.parent
     assert remote_archive_basedir not in str(folder)
     assert local_archive_basedir not in str(folder)
-    print('* Removing "%s" (waiting 5 seconds to cancel) ' % folder_to_remove,
+    print('* Removing "%s" (waiting 5 seconds to cancel) ' % folder,
           end='', flush=True)
     try:
         for i in range(1, 6):
@@ -155,7 +155,7 @@ def remove_temp_files(dat_fname):
         # Remove files
         if not DRY_RUN:
             os.remove(dat_fname)
-            extentions = ('_tf.hdf5', '_inplace.hdf5', '.yml')
+            extensions = ('_tf.hdf5', '_inplace.hdf5', '.yml')
             for ext in extensions:
                 curr_file = Path(dat_fname.parent, dat_fname.stem + ext)
                 if curr_file.is_file():
@@ -205,7 +205,7 @@ def process_int(fname, dry_run=False):
     try:
         ret = process(fname, dry_run=dry_run)
     except Exception as e:
-        print('Worker for "%s" got exception:\n%s' % (fname, e.message), flush=True)
+        print('Worker for "%s" got exception:\n%s' % (fname, str(e)), flush=True)
     print('Completed processing for "%s" (worker)' % fname, flush=True)
     return ret
 
