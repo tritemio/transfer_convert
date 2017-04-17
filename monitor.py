@@ -12,7 +12,7 @@ import transfer
 def get_new_files(folder, init_filelist=None):
     if init_filelist is None:
         init_filelist = []
-    return [f.with_suffix('.dat') for f in folder.glob('**/*.yml')
+    return [f for f in folder.glob('**/*.yml')
             if f.with_suffix('.dat').is_file() and f not in init_filelist]
 
 
@@ -42,8 +42,10 @@ def start_monitoring(folder, dry_run=False):
                 for i in range(20):
                     time.sleep(3)
                     newfiles = get_new_files(folder, init_filelist)
-                    for newfile in newfiles:
-                        pool.apply_async(transfer.process_int, (newfile, dry_run),
+                    for newfile_yml in newfiles:
+                        newfile_dat = newfile_yml.with_suffix('.dat')
+                        pool.apply_async(transfer.process_int,
+                                         (newfile_dat, dry_run),
                                          callback=complete_task_local)
                     init_filelist += newfiles
         except KeyboardInterrupt:
