@@ -16,8 +16,8 @@ monitor_path = '/mnt/Antonio/data/manta/'
 def get_new_files(folder, init_filelist=None):
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('**/*.yml')
-            if f.with_suffix('.dat').is_file and f not in init_filelist]
+    return [f.with_suffix('.dat') for f in folder.glob('**/*.yml')
+            if f.with_suffix('.dat').is_file() and f not in init_filelist]
 
 
 def spawn_process(filename):
@@ -67,6 +67,7 @@ if __name__ == '__main__':
     msg = '1 or 2 command-line arguments expected. Received %d instead.'
     assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
 
+    dry_run = False
     if len(sys.argv) == 3:
         assert sys.argv[2] == '--dry-run', 'Second argument can only be "--dry-run".'
         dry_run = True
