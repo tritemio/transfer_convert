@@ -200,7 +200,7 @@ def process_int(fname, dry_run=False):
         ret = process(fname, dry_run=dry_run)
     except Exception as e:
         print('Worker for "%s" got exception:\n%s' % (fname, e.message), flush=True)
-    print('Processing of "%s" completed.' % fname, flush=True)
+    print('Completed processing for "%s" (worker)' % fname, flush=True)
     return ret
 
 

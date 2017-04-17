@@ -10,14 +10,15 @@ import transfer
 
 
 def get_new_files(folder, init_filelist=None):
+    folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
     return [f for f in folder.glob('**/*.dat')
-            if f.with_suffix('.yml').is_file() and f not in init_filelist]
+            if (f.with_suffix('.yml').is_file() and f not in init_filelist)]
 
 
 def complete_task(fname, dry_run=False):
-    print('Completed processing for "%s"' % fname, flush=True)
+    print('Completed processing for "%s" (callback)' % fname, flush=True)
     #dest = transfer.replace_basedir(fname, transfer.temp_basedir,
     #                                transfer.local_archive_basedir)
     #transfer.filecopy(fname, dest) # filecopy does not have a dry_run arg
@@ -69,7 +70,6 @@ def batch_process(folder, dry_run=False):
             pool.starmap(transfer.process_int, [(f, dry_run) for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
-        time.sleep(1)  # on dry-runs tasks my be killed before being started
     print('Closing subprocess pool.', flush=True)
 
 
