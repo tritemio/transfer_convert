@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 
-import sys
+import sys, os
 from pathlib import Path
 import time
 from multiprocessing import Pool
 from functools import partial
-import subprocess as sp
 
 import transfer
-
-
-monitor_path = '/mnt/Antonio/data/manta/'
 
 
 def get_new_files(folder, init_filelist=None):
@@ -20,23 +16,15 @@ def get_new_files(folder, init_filelist=None):
             if f.with_suffix('.dat').is_file() and f not in init_filelist]
 
 
-def spawn_process(filename):
-    cmd = 'python transfer.py "%s"' % filename
-    if dry_run:
-        cmd += ' --dry-run'
-    sp.Popen([cmd], shell=False)
-
-
-def copy_log(fname, dry_run=False):
-    print('Processing finished for "%d"' % fname, flush=True)
-    dest = transfer.replace_basedir(fname, transfer.temp_basedir,
-                                    transfer.local_archive_basedir)
-    transfer.filecopy(fname, dest)
+def complete_task(fname, dry_run=False):
+    print('Completed processing for "%d"' % fname, flush=True)
+    #dest = transfer.replace_basedir(fname, transfer.temp_basedir,
+    #                                transfer.local_archive_basedir)
+    #transfer.filecopy(fname, dest) # filecopy does not have a dry_run arg
 
 
 def start_monitoring(folder, dry_run=False):
-    assert folder.is_dir(), 'Path not found: %s' % folder
-    copy_log_local = partial(copy_log, dry_run=dry_run)
+    complete_task_local = partial(complete_task, dry_run=dry_run)
     title_msg = 'Monitoring %s' % folder.name
     print('\n\n%s' % title_msg)
 
@@ -56,22 +44,78 @@ def start_monitoring(folder, dry_run=False):
                     newfiles = get_new_files(folder, init_filelist)
                     for newfile in newfiles:
                         pool.apply_async(transfer.process_int, (newfile, dry_run),
-                                         callback=copy_log_local)
+                                         callback=complete_task_local)
                     init_filelist += newfiles
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
 
 
+def batch_process(folder, dry_run=False):
+    assert folder.is_dir(), 'Path not found: %s' % folder
+
+    title_msg = 'Monitoring %s' % folder.name
+    print('\n\n%s' % title_msg)
+
+    init_filelist = get_new_files(folder)
+
+    with Pool(processes=4) as pool:
+        try:
+            for newfile in newfiles:
+                pool.apply_async(transfer.process_int, (newfile, dry_run),
+                                 callback=copy_log_local)
+        except KeyboardInterrupt:
+            print('\n>>> Got keyboard interrupt.\n', flush=True)
+    print('Closing subprocess pool.', flush=True)
+
+def help():
+    msg = """\
+    monitor.py
+
+    This script monitors a folder and converts DAT files to Photon-HDF5
+    if a metadata YAML file is found in the same folder.
+
+    USAGE
+    -----
+
+    python monitor.py <folder> [--batch] [--dry-run]
+
+    Arguments:
+        --batch
+            Process all the DAT/YML files in the folder (batch-mode). Without
+            this option only new files created after the monitor started are
+            processed.
+        --dry-run
+            No processing (copy, conversion, analysis) is perfomed.
+            Used for debugging.
+
+    """
+    print(msg)
+
+
 if __name__ == '__main__':
-    msg = '1 or 2 command-line arguments expected. Received %d instead.'
-    assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
+    args = sys.argv[1:].copy()
+    if len(args) == 0 or '-h' in args or '--help' in args:
+        help()
+        os.exit(0)
+    msg = '1 to 3 command-line arguments expected. Received %d instead.'
+    assert 1 <= len(args) <= 3, msg % len(args)
+
 
     dry_run = False
-    if len(sys.argv) == 3:
-        assert sys.argv[2] == '--dry-run', 'Second argument can only be "--dry-run".'
+    if '--dry-run' in args:
         dry_run = True
+        args.pop(args.index('--dry-run'))
+    batch = False
+    if '--batch' in in sys.argv[1:]:
+        batch = True
+        args.pop(args.index('--batch'))
+    assert len(args) == 1
 
-    folder = Path(sys.argv[1])
-    start_monitoring(folder, dry_run)
+    folder = Path(arg[0])
+    assert folder.is_dir(), 'Path not found: %s' % folder
+    if batch:
+        batch_process(folder, dry_run)
+    else:
+        start_monitoring(folder, dry_run)
     print('Monitor execution end.', flush=True)
