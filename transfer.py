@@ -192,10 +192,10 @@ def process(fname, dry_run=False):
     timestamp()
     remove_temp_files(copied_fname)
 
-    timestamp()
-    h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
-    assert h5_fname_archive.is_file()
-    run_analysis(h5_fname_archive)
+    #timestamp()
+    #h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
+    #assert h5_fname_archive.is_file()
+    #run_analysis(h5_fname_archive)
     timestamp()
     return fname
 
