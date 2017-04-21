@@ -136,12 +136,12 @@ def run_analysis(fname):
 
 
 def remove_temp_files(dat_fname):
-    """Remove temporary folder."""
+    """Remove temporary files."""
     # Safety checks
     folder = dat_fname.parent
     assert remote_archive_basedir not in str(folder)
     assert local_archive_basedir not in str(folder)
-    print('* Removing "%s" (waiting 5 seconds to cancel) ' % folder,
+    print('* Removing temp files in "%s" (waiting 5 seconds to cancel) ' % folder,
           end='', flush=True)
     try:
         for i in range(1, 6):
