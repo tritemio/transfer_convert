@@ -100,7 +100,7 @@ def convert(filepath, basedir):
 
     # Name of the output notebook
     suffix = 'inplace' if 'inplace' in convert_notebook_name else 'tf'
-    nb_out_path = Path(filepath.parent, filepath.stem + '_conversion_%s.ipynb' % suffix)
+    nb_out_path = Path(filepath.parent, filepath.stem + '_%s_conversion.ipynb' % suffix)
 
     # Compute input file name relative to the basedir
     # This is the format of the input file-name required by the conversion notebook
