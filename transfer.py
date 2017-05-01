@@ -169,7 +169,7 @@ def remove_temp_files(dat_fname):
         print('  [DONE]. \n', flush=True)
 
 
-def process(fname, dry_run=False, inplace=False, analyze=True):
+def process(fname, dry_run=False, inplace=False, analyze=True, remove=True):
     """
     This is the main function to all to copy the input DAT file to the temp
     folder, convert it to Photon-HDF5, copy all the files to the archive folder
@@ -194,8 +194,9 @@ def process(fname, dry_run=False, inplace=False, analyze=True):
     timestamp()
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
 
-    timestamp()
-    remove_temp_files(copied_fname)
+    if remove:
+        timestamp()
+        remove_temp_files(copied_fname)
 
     if analyze:
         timestamp()
@@ -207,10 +208,10 @@ def process(fname, dry_run=False, inplace=False, analyze=True):
     return fname
 
 
-def process_int(fname, dry_run=False, inplace=False, analyze=True):
+def process_int(fname, dry_run=False, inplace=False, analyze=True, remove=True):
     ret = None
     try:
-        ret = process(fname, dry_run=dry_run, inplace=inplace, analyze=analyze)
+        ret = process(fname, dry_run=dry_run, inplace=inplace, analyze=analyze, remove=remove)
     except Exception as e:
         print('Worker for "%s" got exception:\n%s' % (fname, str(e)), flush=True)
     print('Completed processing for "%s" (worker)' % fname, flush=True)

@@ -25,7 +25,8 @@ def complete_task(fname, dry_run=False):
     #transfer.filecopy(fname, dest) # filecopy does not have a dry_run arg
 
 
-def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True):
+def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
+                     remove=True):
     title_msg = 'Monitoring files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
@@ -45,7 +46,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
                     newfiles = get_new_files(folder, init_filelist)
                     for newfile in newfiles:
                         pool.apply_async(transfer.process_int,
-                                         (newfile, dry_run, inplace, analyze),
+                                         (newfile, dry_run, inplace, analyze, remove),
                                          callback=complete_task)
                     init_filelist += newfiles
         except KeyboardInterrupt:
@@ -53,7 +54,8 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
     print('Closing subprocess pool.', flush=True)
 
 
-def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True):
+def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
+                  remove=True):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
@@ -69,7 +71,7 @@ def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True):
     with Pool(processes=nproc) as pool:
         try:
             pool.starmap(transfer.process_int, 
-                         [(f, dry_run, inplace, analyze) for f in filelist])
+                         [(f, dry_run, inplace, analyze, remove) for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
@@ -103,12 +105,15 @@ if __name__ == '__main__':
                         help='Number of multiprocess workers to use.')
     parser.add_argument('--analyze', action='store_true', 
                         help='Run smFRET analysis after files are converted.')
+    parser.add_argument('--keep-temp-files', action='store_true', 
+                        help='Do not delete files from temporary work folder.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
     assert folder.is_dir(), 'Path not found: %s' % folder
     kwargs = dict(dry_run=args.dry_run, nproc=args.num_processes, 
-                  inplace=args.inplace, analyze=args.analyze)
+                  inplace=args.inplace, analyze=args.analyze, 
+                  remove=not args.keep_temp_files)
     if args.batch:
         batch_process(folder, **kwargs)
     else:
