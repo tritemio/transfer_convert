@@ -26,7 +26,7 @@ def complete_task(fname, dry_run=False):
 
 
 def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True):
-    title_msg = 'Monitoring %s' % folder.name
+    title_msg = 'Monitoring files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
     init_filelist = get_new_files(folder)
@@ -56,7 +56,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
 def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
-    title_msg = 'Monitoring %s' % folder.name
+    title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
     filelist = get_new_files(folder)
