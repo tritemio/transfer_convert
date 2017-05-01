@@ -25,7 +25,7 @@ def complete_task(fname, dry_run=False):
     #transfer.filecopy(fname, dest) # filecopy does not have a dry_run arg
 
 
-def start_monitoring(folder, dry_run=False):
+def start_monitoring(folder, dry_run=False, nproc=4):
     title_msg = 'Monitoring %s' % folder.name
     print('\n\n%s' % title_msg)
 
@@ -36,7 +36,7 @@ def start_monitoring(folder, dry_run=False):
         print('  %s' % f)
     print()
 
-    with Pool(processes=4) as pool:
+    with Pool(processes=nproc) as pool:
         try:
             while True:
                 transfer.timestamp()
@@ -53,7 +53,7 @@ def start_monitoring(folder, dry_run=False):
     print('Closing subprocess pool.', flush=True)
 
 
-def batch_process(folder, dry_run=False):
+def batch_process(folder, dry_run=False, nproc=4):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Monitoring %s' % folder.name
@@ -66,7 +66,7 @@ def batch_process(folder, dry_run=False):
         print('  %s' % f)
     print()
 
-    with Pool(processes=4) as pool:
+    with Pool(processes=nproc) as pool:
         try:
             pool.starmap(transfer.process_int, [(f, dry_run) for f in filelist])
         except KeyboardInterrupt:
@@ -90,14 +90,16 @@ if __name__ == '__main__':
         this option only new files created after the monitor started are
         processed."""
     parser.add_argument('--batch', action='store_true', help=msg_batch)
-    msg_folder = 'Source folder with files to be processed'
-    parser.add_argument('folder', help=msg_folder)
+    parser.add_argument('folder', 
+                        help='Source folder with files to be processed.')
+    parser.add_argument('--num-processes', '-n', metavar='N', type=int, default=4, 
+                        help='Number of multiprocess workers to use.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
     assert folder.is_dir(), 'Path not found: %s' % folder
     if args.batch:
-        batch_process(folder, args.dry_run)
+        batch_process(folder, args.dry_run, nproc=args.num_processes)
     else:
-        start_monitoring(folder, args.dry_run)
+        start_monitoring(folder, args.dry_run, nproc=args.num_processes)
     print('Monitor execution end.', flush=True)

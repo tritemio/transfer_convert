@@ -9,8 +9,8 @@ import time
 from nbrun import run_notebook
 
 
-convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
-# convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
+#convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
+convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
 analysis_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
