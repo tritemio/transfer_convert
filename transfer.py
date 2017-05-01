@@ -9,8 +9,8 @@ import time
 from nbrun import run_notebook
 
 
-#convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
-convert_notebook_name = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
+convert_notebook_name_tempfile = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
+convert_notebook_name_inplace = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
 analysis_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
@@ -89,7 +89,7 @@ def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
              msg='conversion notebook to archive')
 
 
-def convert(filepath, basedir):
+def convert(filepath, basedir, inplace=False):
     """
     Convert a DAT file to Photon-HDF5.
 
@@ -99,7 +99,12 @@ def convert(filepath, basedir):
     print('* Converting input file to Photon-HDF5...', flush=True)
 
     # Name of the output notebook
-    suffix = 'inplace' if 'inplace' in convert_notebook_name else 'tf'
+    if inplace:
+        convert_notebook_name = convert_notebook_name_inplace
+        suffix = 'inplace'
+    else:
+        convert_notebook_name = convert_notebook_name_tempfile
+        suffix = 'tf'
     nb_out_path = Path(filepath.parent, filepath.stem + '_%s_conversion.ipynb' % suffix)
 
     # Compute input file name relative to the basedir
@@ -164,7 +169,7 @@ def remove_temp_files(dat_fname):
         print('  [DONE]. \n', flush=True)
 
 
-def process(fname, dry_run=False):
+def process(fname, dry_run=False, inplace=False, analyze=True):
     """
     This is the main function to all to copy the input DAT file to the temp
     folder, convert it to Photon-HDF5, copy all the files to the archive folder
@@ -184,7 +189,7 @@ def process(fname, dry_run=False):
 
     timestamp()
     assert temp_basedir in str(copied_fname)
-    h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir)
+    h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir, inplace=inplace)
 
     timestamp()
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
@@ -192,18 +197,20 @@ def process(fname, dry_run=False):
     timestamp()
     remove_temp_files(copied_fname)
 
-    #timestamp()
-    #h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
-    #assert h5_fname_archive.is_file()
-    #run_analysis(h5_fname_archive)
+    if analyze:
+        timestamp()
+        h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
+        assert h5_fname_archive.is_file()
+        run_analysis(h5_fname_archive)
+
     timestamp()
     return fname
 
 
-def process_int(fname, dry_run=False):
+def process_int(fname, dry_run=False, inplace=False, analyze=True):
     ret = None
     try:
-        ret = process(fname, dry_run=dry_run)
+        ret = process(fname, dry_run=dry_run, inplace=inplace, analyze=analyze)
     except Exception as e:
         print('Worker for "%s" got exception:\n%s' % (fname, str(e)), flush=True)
     print('Completed processing for "%s" (worker)' % fname, flush=True)
