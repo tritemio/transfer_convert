@@ -114,7 +114,7 @@ def convert(filepath, basedir, inplace=False):
     # Convert file to Photon-HDF5
     if not DRY_RUN:
         run_notebook(convert_notebook_name, out_notebook_path=nb_out_path,
-                     nb_kwargs={'fname': fname_nb_input})
+                     nb_kwargs={'fname': fname_nb_input}, hide_input=False)
 
     print('  [DONE].\n', flush=True)
 
@@ -136,7 +136,7 @@ def run_analysis(fname):
     # Convert file to Photon-HDF5
     if not DRY_RUN:
         run_notebook(analysis_notebook_name, out_notebook_path=nb_out_path,
-                     nb_kwargs={'fname': str(fname)})
+                     nb_kwargs={'fname': str(fname)}, hide_input=False)
     print('  [DONE].\n', flush=True)
 
 
