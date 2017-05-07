@@ -96,7 +96,7 @@ def convert(filepath, basedir, inplace=False):
     Arguments:
         filepath (Path): full path of DAT file to be converted.
     """
-    print('* Converting input file to Photon-HDF5...', flush=True)
+    print('* Converting to Photon-HDF5: %s' % filepath.stem, flush=True)
 
     # Name of the output notebook
     if inplace:
@@ -116,7 +116,7 @@ def convert(filepath, basedir, inplace=False):
         run_notebook(convert_notebook_name, out_notebook_path=nb_out_path,
                      nb_kwargs={'fname': fname_nb_input}, hide_input=False)
 
-    print('  [DONE].\n', flush=True)
+    print('  [COMPLETED CONVERSION] %s.\n' % filepath.stem, flush=True)
 
     h5_fname = Path(filepath.parent, filepath.stem + '_%s.hdf5' % suffix)
     return h5_fname, nb_out_path
@@ -129,7 +129,7 @@ def run_analysis(fname):
     Arguments:
         fname (Path): full path of HDF5 file to be analyzed.
     """
-    print('* Running smFRET analysis...', flush=True)
+    print('* Running smFRET analysis for %s' % fname.stem, flush=True)
     # Name of the output notebook is the same of data file
     nb_out_path = fname.with_suffix('.ipynb')
 
@@ -137,7 +137,7 @@ def run_analysis(fname):
     if not DRY_RUN:
         run_notebook(analysis_notebook_name, out_notebook_path=nb_out_path,
                      nb_kwargs={'fname': str(fname)}, hide_input=False)
-    print('  [DONE].\n', flush=True)
+    print('  [COMPLETED ANALYSIS] %s.\n' % fname.stem, flush=True)
 
 
 def remove_temp_files(dat_fname):
@@ -160,13 +160,15 @@ def remove_temp_files(dat_fname):
         # Remove files
         if not DRY_RUN:
             os.remove(dat_fname)
-            extensions = ('_tf.hdf5', '_inplace.hdf5', '.yml')
+            extensions = ('_tf.hdf5', '_inplace.hdf5', '.yml',
+                          '_tf_conversion.ipynb', '_inplace_conversion.ipynb',
+                          '_tf.ipynb', '_inplace.ipynb')
             for ext in extensions:
                 curr_file = Path(dat_fname.parent, dat_fname.stem + ext)
                 if curr_file.is_file():
                     os.remove(curr_file)
 
-        print('  [DONE]. \n', flush=True)
+        print('  [COMPLETED FILE REMOVAL] %s. \n' % dat_fname.stem, flush=True)
 
 
 def process(fname, dry_run=False, inplace=False, analyze=True, remove=True):

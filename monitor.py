@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 
-import sys
 from pathlib import Path
 import time
 from multiprocessing import Pool
-from functools import partial
-from textwrap import dedent
 
 import transfer
 
