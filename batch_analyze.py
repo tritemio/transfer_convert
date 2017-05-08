@@ -3,9 +3,7 @@
 from pathlib import Path
 from multiprocessing import Pool
 
-import nbrun
-
-default_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
+from analyze import run_notebook, default_notebook_name
 
 
 def get_file_list(folder, init_filelist=None):
@@ -14,14 +12,6 @@ def get_file_list(folder, init_filelist=None):
         init_filelist = []
     return [f for f in folder.glob('**/*.hdf5')
             if not f.stem.endswith('_cache')]
-
-
-def run_notebook(data_filename, input_notebook=None):
-    if input_notebook is None:
-        input_notebook = default_notebook_name
-    nbrun.run_notebook(input_notebook,
-                       out_notebook_path=data_filename.with_suffix('.ipynb'),
-                       nb_kwargs={'fname': data_filename})
 
 
 def batch_process(folder, nproc=4, notebook=None):
