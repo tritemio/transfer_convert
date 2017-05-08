@@ -125,8 +125,10 @@ def run_notebook(notebook_path, out_notebook_path=None,
         ep.preprocess(nb, {'metadata': {'path': './'}})
     except:
         # Execution failed, print a message then raise.
-        msg = 'Error executing the notebook "%s".\n\n' % notebook_path
-        msg += 'See notebook "%s" for the traceback.' % out_notebook_path
+        msg = ('Error executing the notebook "%s".\n'
+               'Notebook arguments: %s\n\n'
+               'See notebook "%s" for the traceback.' %
+               (notebook_path, str(nb_kwargs), out_notebook_path))
         print(msg)
         raise
     else:
