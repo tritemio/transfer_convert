@@ -44,7 +44,8 @@ Download the repository and run the scripts directly from the repo folder
 
 - python 3.6 (older versions may work)
 - jupyter notebook 5+
-- nbconver 4.2+
+- jupyter nbconvert 5+
+- [pyyaml](http://pyyaml.org/)
 - [tqdm](https://github.com/tqdm/tqdm) (progress bar)
 - [FRETBursts](http://tritemio.github.io/FRETBursts/) 0.6.3+
 - [phconvert](https://photon-hdf5.github.io/phconvert/) 0.7.3+
