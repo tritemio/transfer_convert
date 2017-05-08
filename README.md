@@ -34,3 +34,18 @@ Type `./batch_analysis -h` for more info on how to use the script.
 Module used for processing a single file (copy, conversion, analysis).
 The script `monitor.py` build a multiprocessing pool and calls functions 
 defined in `transfer.py` to process several files in parallel. 
+
+# Installation
+
+Download the repository and run the scripts directly from the repo folder
+(no installation).
+
+## Dependencies
+
+- python 3.6 (older versions may work)
+- jupyter notebook 5+
+- nbconver 4.2+
+- [tqdm](https://github.com/tqdm/tqdm) (progress bar)
+- [FRETBursts](http://tritemio.github.io/FRETBursts/) 0.6.3+
+- [phconvert](https://photon-hdf5.github.io/phconvert/) 0.7.3+
+- [niconverter](https://github.com/tritemio/niconverter/tree/master)
