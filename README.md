@@ -49,3 +49,5 @@ Download the repository and run the scripts directly from the repo folder
 - [FRETBursts](http://tritemio.github.io/FRETBursts/) 0.6.3+
 - [phconvert](https://photon-hdf5.github.io/phconvert/) 0.7.3+
 - [niconverter](https://github.com/tritemio/niconverter/tree/master)
+
+See also [conda_environment_linux.yml](https://github.com/tritemio/transfer_convert/blob/master/conda_environment_linux.yml).
