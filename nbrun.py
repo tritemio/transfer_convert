@@ -7,7 +7,7 @@ USAGE
 -----
 
 Copy this file in the folder containing the master notebook used to
-execute the other notebooks. Then use `run_notebook()` to execute 
+execute the other notebooks. Then use `run_notebook()` to execute
 notebooks.
 """
 
@@ -43,7 +43,7 @@ def dict_to_code(mapping):
 
 
 def run_notebook(notebook_path, out_notebook_path=None,
-                 suffix='-out', nb_kwargs=None, hide_input=True,
+                 suffix='-out', nb_kwargs=None, hide_input=False,
                  insert_pos=1, timeout=3600, execute_kwargs=None):
     """Runs a notebook and saves the output in a new notebook.
 
@@ -61,12 +61,12 @@ def run_notebook(notebook_path, out_notebook_path=None,
     Arguments:
         notebook_path (pathlib.Path or string): path of the notebook to be
             executed.
-        out_notebook_path (pathlib.Path or string or None): complete path 
-            for the output notebook. If None, saves the notebook in the same 
-            folder as the template adding a suffix. If not None, `suffix` 
-            is ignored. 
+        out_notebook_path (pathlib.Path or string or None): complete path
+            for the output notebook. If None, saves the notebook in the same
+            folder as the template adding a suffix. If not None, `suffix`
+            is ignored.
         suffix (string): suffix to append to the file name of the executed
-            notebook. Only used if out_notebook_path is None.
+            notebook. Argument ignored if `out_notebook_path` is not None.
         nb_kwargs (dict or None): If not None, this dict is converted to a
             string of python assignments with keys representing variables
             names and values variables content. This string is inserted as
@@ -95,7 +95,7 @@ def run_notebook(notebook_path, out_notebook_path=None,
         raise FileNotFoundError("Path '%s' not found." % notebook_path)
 
     if out_notebook_path is None:
-            out_notebook_path = Path(notebook_path.parent, 
+            out_notebook_path = Path(notebook_path.parent,
                                      notebook_path.stem + suffix + '.ipynb')
     out_notebook_path = Path(out_notebook_path)
     if not out_notebook_path.parent.exists():
