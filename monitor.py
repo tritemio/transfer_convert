@@ -67,8 +67,9 @@ def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
 
     with Pool(processes=nproc) as pool:
         try:
-            pool.starmap(transfer.process_int, 
-                         [(f, dry_run, inplace, analyze, remove) for f in filelist])
+            pool.starmap(transfer.process_int,
+                         [(f, dry_run, inplace, analyze, remove)
+                          for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
@@ -96,20 +97,20 @@ if __name__ == '__main__':
     msg = "Perform conversion in-place, without creating temporary HDF5 files."
     parser.add_argument('--inplace', action='store_true', help=msg)
 
-    parser.add_argument('folder', 
+    parser.add_argument('folder',
                         help='Source folder with files to be processed.')
-    parser.add_argument('--num-processes', '-n', metavar='N', type=int, default=4, 
+    parser.add_argument('--num-processes', '-n', metavar='N', type=int, default=4,
                         help='Number of multiprocess workers to use.')
-    parser.add_argument('--analyze', action='store_true', 
+    parser.add_argument('--analyze', action='store_true',
                         help='Run smFRET analysis after files are converted.')
-    parser.add_argument('--keep-temp-files', action='store_true', 
+    parser.add_argument('--keep-temp-files', action='store_true',
                         help='Do not delete files from temporary work folder.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
     assert folder.is_dir(), 'Path not found: %s' % folder
-    kwargs = dict(dry_run=args.dry_run, nproc=args.num_processes, 
-                  inplace=args.inplace, analyze=args.analyze, 
+    kwargs = dict(dry_run=args.dry_run, nproc=args.num_processes,
+                  inplace=args.inplace, analyze=args.analyze,
                   remove=not args.keep_temp_files)
     if args.batch:
         batch_process(folder, **kwargs)
