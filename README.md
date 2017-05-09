@@ -19,7 +19,7 @@ name in the same folder it starts these processing steps:
 Many files can be processed in parallel if a new file appears when the processing
 of the previous file is not finished yet.
 
-Type `./monitor -h` for more info on how to use the script.
+Type `./monitor.py -h` for more info on how to use the script.
 
 ## batch_analysis.py
 
@@ -27,7 +27,7 @@ Analyze all the Photon-HDF5 files in a given folder using a default notebook
 or any other specified notebook. Multiple files can be processed in parallel.
 For optimal performances it is suggested to do not exceed the number of CPUs.
 
-Type `./batch_analysis -h` for more info on how to use the script.
+Type `./batch_analysis.py -h` for more info on how to use the script.
 
 ## transfer.py
 
