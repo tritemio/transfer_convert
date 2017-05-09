@@ -7,11 +7,11 @@ import subprocess as sp
 import time
 
 from nbrun import run_notebook
+from analyze import run_analysis
 
 
 convert_notebook_name_tempfile = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
 convert_notebook_name_inplace = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
-analysis_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
 temp_basedir = '/mnt/ramdisk/'                    # Local temp dir with very fast access
@@ -122,24 +122,6 @@ def convert(filepath, basedir, inplace=False):
     return h5_fname, nb_out_path
 
 
-def run_analysis(fname):
-    """
-    Run basic smFRET analysis on the passed Photon-HDF5 file.
-
-    Arguments:
-        fname (Path): full path of HDF5 file to be analyzed.
-    """
-    print('* Running smFRET analysis for %s' % fname.stem, flush=True)
-    # Name of the output notebook is the same of data file
-    nb_out_path = fname.with_suffix('.ipynb')
-
-    # Convert file to Photon-HDF5
-    if not DRY_RUN:
-        run_notebook(analysis_notebook_name, out_notebook_path=nb_out_path,
-                     nb_kwargs={'fname': str(fname)}, hide_input=False)
-    print('  [COMPLETED ANALYSIS] %s.\n' % fname.stem, flush=True)
-
-
 def remove_temp_files(dat_fname):
     """Remove temporary files."""
     # Safety checks
@@ -204,7 +186,7 @@ def process(fname, dry_run=False, inplace=False, analyze=True, remove=True):
         timestamp()
         h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
         assert h5_fname_archive.is_file()
-        run_analysis(h5_fname_archive)
+        run_analysis(h5_fname_archive, dry_run=dry_run)
 
     timestamp()
     return fname

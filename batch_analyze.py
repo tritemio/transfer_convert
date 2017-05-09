@@ -3,7 +3,7 @@
 from pathlib import Path
 from multiprocessing import Pool
 
-from analyze import run_notebook, default_notebook_name
+from analyze import run_analysis, default_notebook_name
 
 
 def get_file_list(folder, init_filelist=None):
@@ -14,7 +14,7 @@ def get_file_list(folder, init_filelist=None):
             if not f.stem.endswith('_cache')]
 
 
-def batch_process(folder, nproc=4, notebook=None):
+def batch_process(folder, nproc=4, notebook=None, save_html=False):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
@@ -29,7 +29,8 @@ def batch_process(folder, nproc=4, notebook=None):
 
     with Pool(processes=nproc) as pool:
         try:
-            pool.starmap(run_notebook, [(f, notebook) for f in filelist])
+            pool.starmap(run_analysis,
+                         [(f, notebook, save_html) for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
@@ -50,9 +51,12 @@ if __name__ == '__main__':
            "notebook is '%s'." % default_notebook_name)
     parser.add_argument('--notebook', metavar='NB_NAME',
                         default=default_notebook_name, help=msg)
+    parser.add_argument('--save-html', action='store_true',
+                        help='Save a copy of the output notebooks in HTML.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
     assert folder.is_dir(), 'Path not found: %s' % folder
-    batch_process(folder, nproc=args.num_processes, notebook=args.notebook)
+    batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
+                  save_html=args.save_html)
     print('Batch analysis completed.', flush=True)
