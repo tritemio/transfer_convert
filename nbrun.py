@@ -43,42 +43,48 @@ def dict_to_code(mapping):
     return '\n'.join(lines)
 
 
-def run_notebook(notebook_path, out_notebook_path=None,
-                 suffix='-out', nb_kwargs=None, hide_input=False,
-                 insert_pos=1, timeout=3600, execute_kwargs=None,
+def run_notebook(notebook_path, out_notebook_path=None, suffix='-out',
+                 nb_kwargs=None, insert_pos=1, hide_input=False,
+                 timeout=3600, kernel_name=None, execute_kwargs=None,
                  display_links=True, save_html=False):
     """Runs a notebook and saves the output in a new notebook.
 
     Executes a notebook, optionally passing "arguments" in a way roughly
     similar to passing arguments to a function.
     Notebook arguments are passed in a dictionary (`nb_kwargs`) which is
-    converted to a string containing python code, then inserted in the notebook
-    as a code cell. The code contains only assignments of variables which
-    can be used to control the execution of a suitably written notebook. When
-    calling a notebook, you need to know which arguments (variables) to pass.
-    Differently from functions, no check on the input arguments is performed.
-    The "notebook signature" is only informally declared in a conventional
-    markdown cell at the beginning of the notebook.
+    converted to a python string containing assignments. This string is
+    inserted in the template notebook as a code cell. The code assigns
+    variables which can be used to control the execution. When "calling"
+    a notebook, you need to know which arguments (variables) to pass.
+    Unlike normal python functions, no check is performed on the input
+    arguments. For sanity, we recommended describing the variables that
+    can be assigned using a markdown cell at the beginning of each template
+    notebook.
 
     Arguments:
-        notebook_path (pathlib.Path or string): path of the notebook to be
-            executed.
-        out_notebook_path (pathlib.Path or string or None): complete path
-            for the output notebook. If None, saves the notebook in the same
-            folder as the template adding a suffix. If not None, `suffix`
-            is ignored.
+        notebook_path (pathlib.Path or string): input notebook filename.
+            This is the notebook to be executed (i.e. template notebook).
+        out_notebook_path (pathlib.Path or string or None): output notebook
+            file name. If None, the ouput notebook has the same name as the
+            input notebook plus a suffix, specified by the `suffix` argument.
+            If not None, `suffix` is ignored. By specifying a full path,
+            the output notebook can be saved in a different folder than the
+            input notebook.
         suffix (string): suffix to append to the file name of the executed
             notebook. Argument ignored if `out_notebook_path` is not None.
         nb_kwargs (dict or None): If not None, this dict is converted to a
-            string of python assignments with keys representing variables
-            names and values variables content. This string is inserted as
-            code-cell in the notebook to be executed.
+            string of python assignments using the dict keys as variables
+            names and the dict values as variables content. This string is
+            inserted as code-cell in the notebook to be executed.
         insert_pos (int): position of insertion of the code-cell containing
             the input arguments. Default is 1 (i.e. second cell). With this
             default, the input notebook can define, in the first cell, default
             values of input arguments (used when the notebook is executed
             with no arguments or through the Notebook GUI).
-        timeout (int): timeout in seconds after which the execution is aborted.
+        timeout (int): max execution time (seconds) for each cell before the
+            execution is aborted.
+        kernel_name (string or None): name of the kernel used to execute the
+            notebook. Use the default kernel if None.
         execute_kwargs (dict): additional arguments passed to
             `ExecutePreprocessor`.
         hide_input (bool): whether to create a notebook with input cells
@@ -113,7 +119,8 @@ def run_notebook(notebook_path, out_notebook_path=None,
 
     if execute_kwargs is None:
         execute_kwargs = {}
-    ep = ExecutePreprocessor(timeout=timeout, **execute_kwargs)
+    execute_kwargs.update(timeout=timeout, kernel_nale=kernel_name)
+    ep = ExecutePreprocessor(**execute_kwargs)
     nb = nbformat.read(str(notebook_path), as_version=4)
 
     if hide_input:
