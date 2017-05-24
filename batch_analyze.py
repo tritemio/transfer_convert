@@ -14,7 +14,7 @@ def get_file_list(folder, init_filelist=None):
             if not f.stem.endswith('_cache')]
 
 
-def batch_process(folder, nproc=4, notebook=None, save_html=False):
+def batch_process(folder, nproc=4, notebook=None, save_html=False, working_dir='./'):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
@@ -30,7 +30,7 @@ def batch_process(folder, nproc=4, notebook=None, save_html=False):
     with Pool(processes=nproc) as pool:
         try:
             pool.starmap(run_analysis,
-                         [(f, notebook, save_html) for f in filelist])
+                         [(f, notebook, save_html, working_dir) for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
@@ -53,10 +53,12 @@ if __name__ == '__main__':
                         default=default_notebook_name, help=msg)
     parser.add_argument('--save-html', action='store_true',
                         help='Save a copy of the output notebooks in HTML.')
+    parser.add_argument('--working-dir', metavar='PATH', default='./',
+                        help='Working dir for the kernel executing the notebook.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
     assert folder.is_dir(), 'Path not found: %s' % folder
     batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
-                  save_html=args.save_html)
+                  save_html=args.save_html, working_dir=args.working_dir)
     print('Batch analysis completed.', flush=True)

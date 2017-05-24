@@ -44,6 +44,7 @@ def dict_to_code(mapping):
 
 
 def run_notebook(notebook_path, out_notebook_path=None, suffix='-out',
+                 working_dir='./',
                  nb_kwargs=None, insert_pos=1, hide_input=False,
                  timeout=3600, kernel_name=None, execute_kwargs=None,
                  display_links=True, save_html=False):
@@ -70,6 +71,7 @@ def run_notebook(notebook_path, out_notebook_path=None, suffix='-out',
             If not None, `suffix` is ignored. By specifying a full path,
             the output notebook can be saved in a different folder than the
             input notebook.
+        working_dir (string or Path): the folder the kernel is started into.
         suffix (string): suffix to append to the file name of the executed
             notebook. Argument ignored if `out_notebook_path` is not None.
         nb_kwargs (dict or None): If not None, this dict is converted to a
@@ -132,7 +134,7 @@ def run_notebook(notebook_path, out_notebook_path=None, suffix='-out',
     start_time = time.time()
     try:
         # Execute the notebook
-        ep.preprocess(nb, {'metadata': {'path': './'}})
+        ep.preprocess(nb, {'metadata': {'path': working_dir}})
     except:
         # Execution failed, print a message then raise.
         msg = ('Error executing the notebook "%s".\n'

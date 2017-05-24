@@ -5,7 +5,7 @@ default_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
 
 
 def run_analysis(data_filename, input_notebook=None, save_html=False,
-                 dry_run=False):
+                 working_dir='./', dry_run=False):
     """
     Run analysis notebook on the passed data file.
 
@@ -22,5 +22,5 @@ def run_analysis(data_filename, input_notebook=None, save_html=False,
         nbrun.run_notebook(input_notebook, display_links=False,
                            out_notebook_path=data_filename.with_suffix('.ipynb'),
                            nb_kwargs={'fname': str(data_filename)},
-                           save_html=save_html)
+                           save_html=save_html, working_dir=working_dir)
     print('   [COMPLETED ANALYSIS] %s' % (data_filename.stem), flush=True)
