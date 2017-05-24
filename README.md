@@ -29,6 +29,13 @@ For optimal performances it is suggested to do not exceed the number of CPUs.
 
 Type `./batch_analysis.py -h` for more info on how to use the script.
 
+## analize.py
+
+Analyze a single Photon-HDF5 file using a the specified notebook. 
+
+Type `./analyze.py -h` for more info on how to use the script.
+
+
 ## transfer.py
 
 Module used for processing a single file (copy, conversion, analysis).
