@@ -47,7 +47,7 @@ if __name__ == '__main__':
                         default=default_notebook_name, help=msg)
     parser.add_argument('--save-html', action='store_true',
                         help='Save a copy of the output notebooks in HTML.')
-    parser.add_argument('--working-dir', metavar='PATH', default='./',
+    parser.add_argument('--working-dir', metavar='PATH', default=None,
                         help='Working dir for the kernel executing the notebook.')
     args = parser.parse_args()
 
