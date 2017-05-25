@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import sys
 from pathlib import Path
 from multiprocessing import Pool
 
@@ -123,11 +123,9 @@ if __name__ == '__main__':
 
     folder = Path(args.folder)
     if not folder.exists():
-        print('\nFolder not found: %s\n' % folder)
-        os.exit(1)
+        sys.exit('\nFolder not found: %s\n' % folder)
     elif not folder.is_dir():
-        print('\nYou must provide a folder (not a file) as an argument.\n')
-        os.exit(1)
+        sys.exit('\nYou must provide a folder (not a file) as an argument.\n')
 
     batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
                   save_html=args.save_html, working_dir=args.working_dir,
