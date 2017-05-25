@@ -114,7 +114,7 @@ if __name__ == '__main__':
     parser.add_argument('--save-html', action='store_true',
                         help='Save a copy of the output notebooks in HTML.')
     parser.add_argument('--choose-files', action='store_true',
-                        help='Selection files to analyze interactively.')
+                        help='Select files interactively.')
     parser.add_argument('--working-dir', metavar='PATH', default='./',
                         help='Working dir for the kernel executing the notebook.')
     args = parser.parse_args()
