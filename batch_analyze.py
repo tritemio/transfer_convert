@@ -127,7 +127,10 @@ if __name__ == '__main__':
     elif not folder.is_dir():
         sys.exit('\nYou must provide a folder (not a file) as an argument.\n')
 
-    batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
-                  save_html=args.save_html, working_dir=args.working_dir,
-                  interactive=args.choose_files)
-    print('Batch analysis completed.', flush=True)
+    try:
+        batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
+                      save_html=args.save_html, working_dir=args.working_dir,
+                      interactive=args.choose_files)
+        print('Batch analysis completed.', flush=True)
+    except KeyboardInterrupt:
+        sys.exit('\nExecution terminated.\n')
