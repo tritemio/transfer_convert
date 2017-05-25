@@ -54,7 +54,7 @@ def get_file_selection_from_user(path):
     while not selection_confirmed:
         selection = []
         while True:
-            res = input("Select file to analyze (ENTER to finish):")
+            res = input("Select file to analyze (ENTER to finish): ")
             if res.strip() == '':
                 break
             elif res.strip().lower() == 'all':
@@ -88,7 +88,7 @@ def get_file_selection_from_user(path):
 
         valid_answer = False
         while not valid_answer:
-            res = input('Do you want to continue [Yn]')
+            res = input('Do you want to continue [Yn]: ')
             if res.lower().startswith('y') or res.strip() == '':
                 selection_confirmed = True
                 valid_answer = True
@@ -133,4 +133,4 @@ if __name__ == '__main__':
                       interactive=args.choose_files)
         print('Batch analysis completed.', flush=True)
     except KeyboardInterrupt:
-        sys.exit('\nExecution terminated.\n')
+        sys.exit('\n\nExecution terminated.\n')
