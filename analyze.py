@@ -15,7 +15,7 @@ def run_analysis(data_filename, input_notebook=None, save_html=False,
         input_notebook (Path): path of the analysis notebook.
         save_html (bool): if True save a copy of the output notebook in HTML.
         working_dir (Path or None): working dir the kernel is started into.
-            If None (default), use the same folder as the output notebook.
+            If None (default), use the same folder as the data file.
         dry_run (bool): just pretenting. Do not run or save any notebook.
     """
     if input_notebook is None:
