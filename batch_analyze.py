@@ -27,7 +27,7 @@ def batch_process(folder, nproc=4, notebook=None, save_html=False,
     else:
         filelist = get_file_list(folder)
 
-    print('- The following files will be processed:')
+    print('\n- The following files will be processed:')
     for f in filelist:
         print('  %s' % f)
     print()
