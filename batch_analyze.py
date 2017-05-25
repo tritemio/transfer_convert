@@ -14,13 +14,17 @@ def get_file_list(folder, init_filelist=None):
             if not f.stem.endswith('_cache')]
 
 
-def batch_process(folder, nproc=4, notebook=None, save_html=False, working_dir='./'):
+def batch_process(folder, nproc=4, notebook=None, save_html=False,
+                  working_dir='./', interactive=False):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
-    filelist = get_file_list(folder)
+    if interactive:
+        filelist = get_file_selection_from_user(folder)
+    else:
+        filelist = get_file_list(folder)
 
     print('- The following files will be processed:')
     for f in filelist:
@@ -34,6 +38,62 @@ def batch_process(folder, nproc=4, notebook=None, save_html=False, working_dir='
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
+
+
+def get_file_selection_from_user(path):
+    """Get file selection interactively from the user."""
+    filelist = sorted(get_file_list(path))
+    print('Photon-HDF5 files in %s:\n' % path)
+    for i, f in enumerate(filelist):
+        print('  [%d] %s' % (i, f.name), flush=True)
+    print("\nChoose the file to analyze (integer, 'all' or ENTER to "
+          "finish selection).", flush=True)
+
+    selection_confirmed = False
+    while not selection_confirmed:
+        selection = []
+        while True:
+            res = input("Select file to analyze (ENTER to finish):")
+            if res.strip() == '':
+                break
+            elif res.strip().lower() == 'all':
+                selection = filelist
+                break
+            elif res.isdigit():
+                index = int(res)
+                if index >= len(filelist):
+                    print('Index out of range (max valid value is %d).'
+                          % (len(filelist) - 1), flush=True)
+                    continue
+                newfile = filelist[int(res)]
+                if newfile not in selection:
+                    selection.append(newfile)
+                else:
+                    print('File already selected.', flush=True)
+            else:
+                print("Invalid value: selection must be an integer [0-%d], "
+                      "'all' or ENTER." % (len(filelist) - 1), flush=True)
+            if len(selection) >= len(filelist):
+                break
+
+        if len(selection) == 0:
+            print('\nNo file selected, please select at least one file.',
+                  flush=True)
+            continue
+
+        print('\nFiles selected:')
+        for i, f in enumerate(selection):
+            print('  [%d] %s' % (i, f.name), flush=True)
+
+        valid_answer = False
+        while not valid_answer:
+            res = input('Do you want to continue [Yn]')
+            if res.lower().startswith('y') or res.strip() == '':
+                selection_confirmed = True
+                valid_answer = True
+            elif res.lower().startswith('n'):
+                valid_answer = True
+    return selection
 
 
 if __name__ == '__main__':
@@ -53,6 +113,8 @@ if __name__ == '__main__':
                         default=default_notebook_name, help=msg)
     parser.add_argument('--save-html', action='store_true',
                         help='Save a copy of the output notebooks in HTML.')
+    parser.add_argument('--choose-files', action='store_true',
+                        help='Selection files to analyze interactively.')
     parser.add_argument('--working-dir', metavar='PATH', default='./',
                         help='Working dir for the kernel executing the notebook.')
     args = parser.parse_args()
@@ -60,5 +122,6 @@ if __name__ == '__main__':
     folder = Path(args.folder)
     assert folder.is_dir(), 'Path not found: %s' % folder
     batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
-                  save_html=args.save_html, working_dir=args.working_dir)
+                  save_html=args.save_html, working_dir=args.working_dir,
+                  interactive=args.choose_files)
     print('Batch analysis completed.', flush=True)
