@@ -21,7 +21,7 @@ of the previous file is not finished yet.
 
 Type `./monitor.py -h` for more info on how to use the script.
 
-## batch_analysis.py
+## batch_analyze.py
 
 Analyze all the Photon-HDF5 files in a given folder using a default notebook
 or any other specified notebook. Multiple files can be processed in parallel.
