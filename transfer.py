@@ -7,7 +7,7 @@ import subprocess as sp
 import time
 
 from nbrun import run_notebook
-from analyze import run_analysis
+from analyze import run_analysis, default_notebook_name
 
 
 convert_notebook_name_tempfile = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
@@ -192,10 +192,12 @@ def process(fname, dry_run=False, inplace=False, analyze=True, remove=True):
     return fname
 
 
-def process_int(fname, dry_run=False, inplace=False, analyze=True, remove=True):
+def process_int(fname, dry_run=False, inplace=False, analyze=True, remove=True,
+                analyze_kws=None):
     ret = None
     try:
-        ret = process(fname, dry_run=dry_run, inplace=inplace, analyze=analyze, remove=remove)
+        ret = process(fname, dry_run=dry_run, inplace=inplace, analyze=analyze,
+                      remove=remove, analyze_kws=analyze_kws)
     except Exception as e:
         print('Worker for "%s" got exception:\n%s' % (fname, str(e)), flush=True)
     print('Completed processing for "%s" (worker)' % fname, flush=True)
@@ -203,13 +205,35 @@ def process_int(fname, dry_run=False, inplace=False, analyze=True, remove=True):
 
 
 if __name__ == '__main__':
-    msg = '1 or 2 command-line arguments expected. Received %d instead.'
-    assert 2 <= len(sys.argv) <= 3, msg % (len(sys.argv) - 1)
+    import argparse
+    descr = """\
+        This script executes an analysis notebook on the specified HDF5 file.
+        """
+    parser = argparse.ArgumentParser(description=descr, epilog='\n')
+    parser.add_argument('datafile', help='Source DAT file to be processed.')
+    msg = ("No processing (copy, conversion, analysis) is perfomed. "
+           "Used for debugging.")
+    parser.add_argument('--dry-run', action='store_true', help=msg)
+    parser.add_argument('--save-html', action='store_true',
+                        help='Save a copy of the output notebooks in HTML.')
+    parser.add_argument('--inplace', action='store_true',
+                        help='Create Photon-HDF5 without creating a temp file.')
+    parser.add_argument('--analyze', action='store_true',
+                        help='Run smFRET analysis after files are converted.')
+    msg = ("Notebook used for smFRET data analysis. If not specified, the "
+           "default is '%s'." % default_notebook_name)
+    parser.add_argument('--notebook', metavar='NB_NAME',
+                        default=default_notebook_name, help=msg)
+    parser.add_argument('--working-dir', metavar='PATH', default=None,
+                        help='Working dir for the kernel executing the notebook.')
+    args = parser.parse_args()
 
-    if len(sys.argv) == 3:
-        assert sys.argv[2] == '--dry-run', 'Second argument can only be "--dry-run".'
-        dry_run = True
+    datafile = Path(args.datafile)
+    if not datafile.exists():
+        sys.exit('\nData file not found: %s\n' % datafile)
 
-    fname = Path(sys.argv[1])
-    process_int(fname, dry_run=dry_run)
-    print('Closing worker for "%s"' % fname, flush=True)
+    analyze_kws = dict(notebook=args.notebook, save_html=args.save_html,
+                       working_dir=args.working_dir)
+    process_int(datafile, dry_run=args.dry_run, inplace=args.inplace,
+                analyze_kws=analyze_kws)
+    print('Terminated processing of "%s"' % datafile, flush=True)

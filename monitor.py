@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 from pathlib import Path
 import time
 from multiprocessing import Pool
@@ -23,7 +24,7 @@ def complete_task(fname, dry_run=False):
 
 
 def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
-                     remove=True):
+                     remove=True, analyze_kws=None):
     title_msg = 'Monitoring files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
@@ -34,6 +35,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
         print('  %s' % f)
     print()
 
+    args = [dry_run, inplace, analyze, remove, analyze_kws]
     with Pool(processes=nproc) as pool:
         try:
             while True:
@@ -43,7 +45,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
                     newfiles = get_new_files(folder, init_filelist)
                     for newfile in newfiles:
                         pool.apply_async(transfer.process_int,
-                                         (newfile, dry_run, inplace, analyze, remove),
+                                         [newfile] + args,
                                          callback=complete_task)
                     init_filelist += newfiles
         except KeyboardInterrupt:
@@ -52,7 +54,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
 
 
 def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
-                  remove=True):
+                  remove=True, analyze_kws=None):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
@@ -65,11 +67,10 @@ def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
         print('  %s' % f)
     print()
 
+    args = [dry_run, inplace, analyze, remove, analyze_kws]
     with Pool(processes=nproc) as pool:
         try:
-            pool.starmap(transfer.process_int,
-                         [(f, dry_run, inplace, analyze, remove)
-                          for f in filelist])
+            pool.starmap(transfer.process_int, [[f] + args for f in filelist])
         except KeyboardInterrupt:
             print('\n>>> Got keyboard interrupt.\n', flush=True)
     print('Closing subprocess pool.', flush=True)
@@ -103,15 +104,28 @@ if __name__ == '__main__':
                         help='Number of multiprocess workers to use.')
     parser.add_argument('--analyze', action='store_true',
                         help='Run smFRET analysis after files are converted.')
+    msg = ("Notebook used for smFRET data analysis. If not specified, the "
+           "default is '%s'." % transfer.default_notebook_name)
+    parser.add_argument('--notebook', metavar='NB_NAME',
+                        default=transfer.default_notebook_name, help=msg)
+    parser.add_argument('--working-dir', metavar='PATH', default=None,
+                        help='Working dir for the kernel executing the notebook.')
+    parser.add_argument('--save-html', action='store_true',
+                        help='Save a copy of the smFRET notebooks in HTML.')
     parser.add_argument('--keep-temp-files', action='store_true',
                         help='Do not delete files from temporary work folder.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
-    assert folder.is_dir(), 'Path not found: %s' % folder
+    if not folder.exists():
+        sys.exit('\nFolder not found: %s\n' % folder)
+    elif not folder.is_dir():
+        sys.exit('\nYou must provide a folder (not a file) as an argument.\n')
+    analyze_kws = dict(notebook=args.notebook, save_html=args.save_html,
+                       working_dir=args.working_dir)
     kwargs = dict(dry_run=args.dry_run, nproc=args.num_processes,
                   inplace=args.inplace, analyze=args.analyze,
-                  remove=not args.keep_temp_files)
+                  remove=not args.keep_temp_files, analyze_kws=analyze_kws)
     if args.batch:
         batch_process(folder, **kwargs)
     else:

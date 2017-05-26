@@ -108,8 +108,8 @@ if __name__ == '__main__':
                         help='Source folder with files to be processed.')
     parser.add_argument('--num-processes', '-n', metavar='N', type=int, default=4,
                         help='Number of multiprocess workers to use.')
-    msg = ("Filename of the analysis notebook. If not specified, the default "
-           "notebook is '%s'." % default_notebook_name)
+    msg = ("Notebook used for smFRET data analysis. If not specified, the "
+           "default is '%s'." % default_notebook_name)
     parser.add_argument('--notebook', metavar='NB_NAME',
                         default=default_notebook_name, help=msg)
     parser.add_argument('--save-html', action='store_true',
