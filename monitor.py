@@ -121,7 +121,7 @@ if __name__ == '__main__':
         sys.exit('\nFolder not found: %s\n' % folder)
     elif not folder.is_dir():
         sys.exit('\nYou must provide a folder (not a file) as an argument.\n')
-    analyze_kws = dict(notebook=args.notebook, save_html=args.save_html,
+    analyze_kws = dict(input_notebook=args.notebook, save_html=args.save_html,
                        working_dir=args.working_dir)
     kwargs = dict(dry_run=args.dry_run, nproc=args.num_processes,
                   inplace=args.inplace, analyze=args.analyze,
