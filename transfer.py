@@ -153,11 +153,12 @@ def remove_temp_files(dat_fname):
         print('  [COMPLETED FILE REMOVAL] %s. \n' % dat_fname.stem, flush=True)
 
 
-def process(fname, dry_run=False, inplace=False, analyze=True, remove=True):
+def process(fname, dry_run=False, inplace=False, analyze=True, remove=True,
+            analyze_kws=None):
     """
-    This is the main function to all to copy the input DAT file to the temp
-    folder, convert it to Photon-HDF5, copy all the files to the archive folder
-    and run a basic smFRET analysis.
+    This is the main function for copying the input DAT file to the temp
+    folder, converting it to Photon-HDF5, copying all the files to the
+    archive folder and (optionally) running the smFRET analysis.
     """
     global DRY_RUN
     DRY_RUN = DRY_RUN or dry_run
@@ -186,7 +187,7 @@ def process(fname, dry_run=False, inplace=False, analyze=True, remove=True):
         timestamp()
         h5_fname_archive = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
         assert h5_fname_archive.is_file()
-        run_analysis(h5_fname_archive, dry_run=dry_run)
+        run_analysis(h5_fname_archive, dry_run=dry_run, **analyze_kws)
 
     timestamp()
     return fname
@@ -232,7 +233,7 @@ if __name__ == '__main__':
     if not datafile.exists():
         sys.exit('\nData file not found: %s\n' % datafile)
 
-    analyze_kws = dict(notebook=args.notebook, save_html=args.save_html,
+    analyze_kws = dict(input_notebook=args.notebook, save_html=args.save_html,
                        working_dir=args.working_dir)
     process_int(datafile, dry_run=args.dry_run, inplace=args.inplace,
                 analyze_kws=analyze_kws)
