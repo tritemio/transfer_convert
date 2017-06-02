@@ -7,25 +7,25 @@ from multiprocessing import Pool
 from analyze import run_analysis, default_notebook_name
 
 
-def get_file_list(folder, init_filelist=None):
+def get_file_list(folder, init_filelist=None, ext='hdf5'):
     folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('**/*.hdf5')
+    return [f for f in folder.glob('**/*.%s' % ext)
             if not f.stem.endswith('_cache')]
 
 
 def batch_process(folder, nproc=4, notebook=None, save_html=False,
-                  working_dir='./', interactive=False):
+                  working_dir='./', interactive=False, ext='hdf5'):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
     if interactive:
-        filelist = get_file_selection_from_user(folder)
+        filelist = get_file_selection_from_user(folder, ext=ext)
     else:
-        filelist = get_file_list(folder)
+        filelist = get_file_list(folder, ext=ext)
 
     print('\n- The following files will be processed:')
     for f in filelist:
@@ -41,9 +41,9 @@ def batch_process(folder, nproc=4, notebook=None, save_html=False,
     print('Closing subprocess pool.', flush=True)
 
 
-def get_file_selection_from_user(path):
+def get_file_selection_from_user(path, ext='hdf5'):
     """Get file selection interactively from the user."""
-    filelist = sorted(get_file_list(path))
+    filelist = sorted(get_file_list(path, ext=ext))
     print('Photon-HDF5 files in %s:\n' % path)
     for i, f in enumerate(filelist):
         print('  [%d] %s' % (i, f.name), flush=True)
@@ -119,6 +119,8 @@ if __name__ == '__main__':
     msg = ('Working dir for the kernel executing the notebook.\n'
            'By default, uses the folder containing the data file.')
     parser.add_argument('--working-dir', metavar='PATH', default=None, help=msg)
+    parser.add_argument('--extension', metavar='DATA_FILE_EXT', default='hdf5',
+                        help='File extension of data files. Default hdf5.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
@@ -130,7 +132,7 @@ if __name__ == '__main__':
     try:
         batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
                       save_html=args.save_html, working_dir=args.working_dir,
-                      interactive=args.choose_files)
+                      interactive=args.choose_files, ext=args.extension)
         print('Batch analysis completed.', flush=True)
     except KeyboardInterrupt:
         sys.exit('\n\nExecution terminated.\n')
