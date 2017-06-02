@@ -7,25 +7,28 @@ from multiprocessing import Pool
 from analyze import run_analysis, default_notebook_name
 
 
-def get_file_list(folder, init_filelist=None, ext='hdf5'):
+def get_file_list(folder, init_filelist=None, ext='hdf5', recurse=False):
     folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('*.%s' % ext)
+    pre = '**/' if recurse else ''
+    return [f for f in folder.glob('%s*.%s' % (pre, ext))
             if not f.stem.endswith('_cache')]
 
 
 def batch_process(folder, nproc=4, notebook=None, save_html=False,
-                  working_dir='./', interactive=False, ext='hdf5'):
+                  working_dir='./', interactive=False, ext='hdf5',
+                  recurse=False):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
     if interactive:
-        filelist = get_file_selection_from_user(folder, ext=ext)
+        filelist = get_file_selection_from_user(folder, ext=ext,
+                                                recurse=recurse)
     else:
-        filelist = get_file_list(folder, ext=ext)
+        filelist = get_file_list(folder, ext=ext, recurse=recurse)
 
     print('\n- The following files will be processed:')
     for f in filelist:
@@ -41,9 +44,9 @@ def batch_process(folder, nproc=4, notebook=None, save_html=False,
     print('Closing subprocess pool.', flush=True)
 
 
-def get_file_selection_from_user(path, ext='hdf5'):
+def get_file_selection_from_user(path, ext='hdf5', recurse=False):
     """Get file selection interactively from the user."""
-    filelist = sorted(get_file_list(path, ext=ext))
+    filelist = sorted(get_file_list(path, ext=ext, recurse=recurse))
     print('Photon-HDF5 files in %s:\n' % path)
     for i, f in enumerate(filelist):
         print('  [%d] %s' % (i, f.name), flush=True)
@@ -121,6 +124,8 @@ if __name__ == '__main__':
     parser.add_argument('--working-dir', metavar='PATH', default=None, help=msg)
     parser.add_argument('--extension', metavar='DATA_FILE_EXT', default='hdf5',
                         help='File extension of data files. Default hdf5.')
+    parser.add_argument('--recurse', action='store_true',
+                        help='Look also in subfolders for data files.')
     args = parser.parse_args()
 
     folder = Path(args.folder)
@@ -132,7 +137,8 @@ if __name__ == '__main__':
     try:
         batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
                       save_html=args.save_html, working_dir=args.working_dir,
-                      interactive=args.choose_files, ext=args.extension)
+                      interactive=args.choose_files, ext=args.extension,
+                      recurse=args.recurse)
         print('Batch analysis completed.', flush=True)
     except KeyboardInterrupt:
         sys.exit('\n\nExecution terminated.\n')
