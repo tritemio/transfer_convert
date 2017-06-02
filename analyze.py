@@ -23,9 +23,12 @@ def run_analysis(data_filename, input_notebook=None, save_html=False,
     print(' * Running analysis for %s' % (data_filename.stem), flush=True)
     if working_dir is None:
         working_dir = data_filename.parent
+    out_path_html = Path(working_dir, 'reports_html',
+                         data_filename.stem + '.html')
     if not dry_run:
         nbrun.run_notebook(input_notebook, display_links=False,
-                           out_notebook_path=data_filename.with_suffix('.ipynb'),
+                           out_path_ipynb=data_filename.with_suffix('.ipynb'),
+                           out_path_html=out_path_html,
                            nb_kwargs={'fname': str(data_filename)},
                            save_html=save_html, working_dir=working_dir)
     print('   [COMPLETED ANALYSIS] %s' % (data_filename.stem), flush=True)
