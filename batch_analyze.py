@@ -11,7 +11,7 @@ def get_file_list(folder, init_filelist=None, ext='hdf5'):
     folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('**/*.%s' % ext)
+    return [f for f in folder.glob('*.%s' % ext)
             if not f.stem.endswith('_cache')]
 
 
