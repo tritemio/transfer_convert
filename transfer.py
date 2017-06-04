@@ -115,7 +115,7 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
     if singlespot:
         convert_notebook_name = convert_notebook_name_singlespot
         suffix = ''
-        fname_nb_input = filepath
+        fname_nb_input = str(filepath)
     nb_out_path = Path(filepath.parent,
                        filepath.stem + '%s_conversion.ipynb' % suffix)
 
