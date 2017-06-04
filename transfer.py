@@ -100,6 +100,10 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
         filepath (Path): full path of DAT file to be converted.
     """
     print('* Converting to Photon-HDF5: %s' % filepath.stem, flush=True)
+    # Compute input file name relative to the basedir
+    # This is the format of the input file-name required by
+    # 48-spot conversion notebook
+    fname_nb_input = str(replace_basedir(filepath, basedir, ''))
 
     # Name of the output notebook
     if inplace:
@@ -111,12 +115,9 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
     if singlespot:
         convert_notebook_name = convert_notebook_name_singlespot
         suffix = ''
+        fname_nb_input = filepath
     nb_out_path = Path(filepath.parent,
                        filepath.stem + '%s_conversion.ipynb' % suffix)
-
-    # Compute input file name relative to the basedir
-    # This is the format of the input file-name required by the conversion notebook
-    fname_nb_input = str(replace_basedir(filepath, basedir, ''))
 
     # Convert file to Photon-HDF5
     if not DRY_RUN:
