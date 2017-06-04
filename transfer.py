@@ -219,7 +219,10 @@ def process_int(fname, dry_run=False, inplace=False, analyze=True, remove=True,
 if __name__ == '__main__':
     import argparse
     descr = """\
-        This script executes an analysis notebook on the specified HDF5 file.
+        Transfer and convert the specified data file to Photon-HDF5.
+        After conversion files are copied to the archive folder.
+        Optionally, the Photon-HDF5 file can be analyzed with an analysis
+        notebook.
         """
     parser = argparse.ArgumentParser(description=descr, epilog='\n')
     parser.add_argument('datafile', help='Source DAT file to be processed.')
@@ -253,5 +256,6 @@ if __name__ == '__main__':
     analyze_kws = dict(input_notebook=args.notebook, save_html=args.save_html,
                        working_dir=args.working_dir)
     process_int(datafile, dry_run=args.dry_run, inplace=not args.tempfile,
-                analyze_kws=analyze_kws, singlespot=args.singlespot)
+                analyze=args.analyze, analyze_kws=analyze_kws,
+                singlespot=args.singlespot)
     print('Terminated processing of "%s"' % datafile, flush=True)
