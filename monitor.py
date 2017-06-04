@@ -8,11 +8,11 @@ from multiprocessing import Pool
 import transfer
 
 
-def get_new_files(folder, init_filelist=None):
+def get_new_files(folder, init_filelist=None, ext='.dat'):
     folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('**/*.dat')
+    return [f for f in folder.glob('**/*%s' % ext)
             if (f.with_suffix('.yml').is_file() and f not in init_filelist)]
 
 
@@ -28,7 +28,8 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
     title_msg = 'Monitoring files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
-    init_filelist = get_new_files(folder)
+    ext = '.sm' if singlespot else '.dat'
+    init_filelist = get_new_files(folder, ext=ext)
 
     print('- The following files are present at startup and will be skipped:')
     for f in init_filelist:
@@ -42,7 +43,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
                 transfer.timestamp()
                 for i in range(20):
                     time.sleep(3)
-                    newfiles = get_new_files(folder, init_filelist)
+                    newfiles = get_new_files(folder, init_filelist, ext=ext)
                     for newfile in newfiles:
                         pool.apply_async(transfer.process_int,
                                          [newfile] + args,
@@ -60,7 +61,8 @@ def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
     title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
-    filelist = get_new_files(folder)
+    ext = '.sm' if singlespot else '.dat'
+    filelist = get_new_files(folder, ext=ext)
 
     print('- The following files will be processed in batch:')
     for f in filelist:
