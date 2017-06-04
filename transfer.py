@@ -105,7 +105,10 @@ def convert(filepath, basedir, inplace=False):
     else:
         convert_notebook_name = convert_notebook_name_tempfile
         suffix = 'tf'
-    nb_out_path = Path(filepath.parent, filepath.stem + '_%s_conversion.ipynb' % suffix)
+    nb_out_dir = Path(filepath.parent, 'conversion')
+    nb_out_dir.mkdir(exist_ok=True)
+    nb_out_path = Path(nb_out_dir,
+                       filepath.stem + '_%s_conversion.ipynb' % suffix)
 
     # Compute input file name relative to the basedir
     # This is the format of the input file-name required by the conversion notebook
@@ -217,8 +220,10 @@ if __name__ == '__main__':
     parser.add_argument('--dry-run', action='store_true', help=msg)
     parser.add_argument('--save-html', action='store_true',
                         help='Save a copy of the output notebooks in HTML.')
-    parser.add_argument('--inplace', action='store_true',
-                        help='Create Photon-HDF5 without creating a temp file.')
+    parser.add_argument('--tempfile', action='store_true',
+                        help='Convert to Photon-HDF5 creating a temporary '
+                             'intermediate file. Without this option no '
+                             'temporary file is created.')
     parser.add_argument('--analyze', action='store_true',
                         help='Run smFRET analysis after files are converted.')
     msg = ("Notebook used for smFRET data analysis. If not specified, the "

@@ -95,8 +95,8 @@ if __name__ == '__main__':
         processed."""
     parser.add_argument('--batch', action='store_true', help=msg)
 
-    msg = "Perform conversion in-place, without creating temporary HDF5 files."
-    parser.add_argument('--inplace', action='store_true', help=msg)
+    msg = "Perform conversion creating an additional temporary HDF5 file."
+    parser.add_argument('--tempfile', action='store_true', help=msg)
 
     parser.add_argument('folder',
                         help='Source folder with files to be processed.')
@@ -124,7 +124,7 @@ if __name__ == '__main__':
     analyze_kws = dict(input_notebook=args.notebook, save_html=args.save_html,
                        working_dir=args.working_dir)
     kwargs = dict(dry_run=args.dry_run, nproc=args.num_processes,
-                  inplace=args.inplace, analyze=args.analyze,
+                  inplace=not args.tempfile, analyze=args.analyze,
                   remove=not args.keep_temp_files, analyze_kws=analyze_kws)
     if args.batch:
         batch_process(folder, **kwargs)
