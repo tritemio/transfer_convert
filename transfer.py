@@ -120,7 +120,7 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
 
     # Convert file to Photon-HDF5
     if not DRY_RUN:
-        run_notebook(convert_notebook_name, out_notebook_path=nb_out_path,
+        run_notebook(convert_notebook_name, out_path_ipynb=nb_out_path,
                      nb_kwargs={'fname': fname_nb_input}, hide_input=False)
 
     print('  [COMPLETED CONVERSION] %s.\n' % filepath.stem, flush=True)
