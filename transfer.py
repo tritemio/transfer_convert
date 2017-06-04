@@ -75,6 +75,7 @@ def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
     dest_nb_conv_fname = replace_basedir(nb_conv_fname, temp_basedir, local_archive_basedir)
     dest_nb_conv_fname = Path(dest_nb_conv_fname.parent, 'conversion',
                               dest_nb_conv_fname.name)
+    dest_nb_conv_fname.parent.mkdir(exist_ok=True)
     dest_orig_fname = replace_basedir(orig_fname, temp_basedir, local_archive_basedir)
 
     # Copy HDF5 file
