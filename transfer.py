@@ -102,17 +102,17 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
     # Name of the output notebook
     if inplace:
         convert_notebook_name = convert_notebook_name_inplace
-        suffix = 'inplace'
+        suffix = '_inplace'
     else:
         convert_notebook_name = convert_notebook_name_tempfile
-        suffix = 'tf'
+        suffix = '_tf'
     if singlespot:
         convert_notebook_name = convert_notebook_name_singlespot
         suffix = ''
     nb_out_dir = Path(filepath.parent, 'conversion')
     nb_out_dir.mkdir(exist_ok=True)
     nb_out_path = Path(nb_out_dir,
-                       filepath.stem + '_%s_conversion.ipynb' % suffix)
+                       filepath.stem + '%s_conversion.ipynb' % suffix)
 
     # Compute input file name relative to the basedir
     # This is the format of the input file-name required by the conversion notebook
@@ -125,7 +125,7 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
 
     print('  [COMPLETED CONVERSION] %s.\n' % filepath.stem, flush=True)
 
-    h5_fname = Path(filepath.parent, filepath.stem + '_%s.hdf5' % suffix)
+    h5_fname = Path(filepath.parent, filepath.stem + '%s.hdf5' % suffix)
     return h5_fname, nb_out_path
 
 
