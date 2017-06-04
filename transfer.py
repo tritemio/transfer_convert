@@ -12,6 +12,7 @@ from analyze import run_analysis, default_notebook_name
 
 convert_notebook_name_tempfile = 'Convert to Photon-HDF5 48-spot smFRET from YAML - tempfile.ipynb'
 convert_notebook_name_inplace = 'Convert to Photon-HDF5 48-spot smFRET from YAML - inplace.ipynb'
+convert_notebook_name_singlespot = 'Convert us-ALEX SM files to Photon-HDF5 - YAML.ipynb'
 
 remote_origin_basedir = '/mnt/Antonio/'           # Remote dir containing the original acquisition data
 temp_basedir = '/mnt/ramdisk/'                    # Local temp dir with very fast access
@@ -89,7 +90,7 @@ def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
              msg='conversion notebook to archive')
 
 
-def convert(filepath, basedir, inplace=False):
+def convert(filepath, basedir, inplace=False, singlespot=False):
     """
     Convert a DAT file to Photon-HDF5.
 
@@ -105,6 +106,9 @@ def convert(filepath, basedir, inplace=False):
     else:
         convert_notebook_name = convert_notebook_name_tempfile
         suffix = 'tf'
+    if singlespot:
+        convert_notebook_name = convert_notebook_name_singlespot
+        suffix = ''
     nb_out_dir = Path(filepath.parent, 'conversion')
     nb_out_dir.mkdir(exist_ok=True)
     nb_out_path = Path(nb_out_dir,
@@ -157,7 +161,7 @@ def remove_temp_files(dat_fname):
 
 
 def process(fname, dry_run=False, inplace=False, analyze=True, remove=True,
-            analyze_kws=None):
+            analyze_kws=None, singlespot=False):
     """
     This is the main function for copying the input DAT file to the temp
     folder, converting it to Photon-HDF5, copying all the files to the
@@ -177,7 +181,8 @@ def process(fname, dry_run=False, inplace=False, analyze=True, remove=True,
 
     timestamp()
     assert temp_basedir in str(copied_fname)
-    h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir, inplace=inplace)
+    h5_fname, nb_conv_fname = convert(copied_fname, temp_basedir,
+                                      inplace=inplace, singlespot=singlespot)
 
     timestamp()
     copy_files_to_archive(h5_fname, copied_fname, nb_conv_fname)
@@ -197,11 +202,12 @@ def process(fname, dry_run=False, inplace=False, analyze=True, remove=True,
 
 
 def process_int(fname, dry_run=False, inplace=False, analyze=True, remove=True,
-                analyze_kws=None):
+                analyze_kws=None, singlespot=False):
     ret = None
     try:
         ret = process(fname, dry_run=dry_run, inplace=inplace, analyze=analyze,
-                      remove=remove, analyze_kws=analyze_kws)
+                      remove=remove, analyze_kws=analyze_kws,
+                      singlespot=singlespot)
     except Exception as e:
         print('Worker for "%s" got exception:\n%s' % (fname, str(e)), flush=True)
     print('Completed processing for "%s" (worker)' % fname, flush=True)
@@ -224,6 +230,10 @@ if __name__ == '__main__':
                         help='Convert to Photon-HDF5 creating a temporary '
                              'intermediate file. Without this option no '
                              'temporary file is created.')
+    parser.add_argument('--singlespot', action='store_true',
+                        help=('Convert SM files of 1-spot smFRET-usALEX data. '
+                              'Without this option, convert DAT files of '
+                              ' 48-spot smFRET [pax or 1-laser] data.'))
     parser.add_argument('--analyze', action='store_true',
                         help='Run smFRET analysis after files are converted.')
     msg = ("Notebook used for smFRET data analysis. If not specified, the "
@@ -240,6 +250,6 @@ if __name__ == '__main__':
 
     analyze_kws = dict(input_notebook=args.notebook, save_html=args.save_html,
                        working_dir=args.working_dir)
-    process_int(datafile, dry_run=args.dry_run, inplace=args.inplace,
-                analyze_kws=analyze_kws)
+    process_int(datafile, dry_run=args.dry_run, inplace=not args.tempfile,
+                analyze_kws=analyze_kws, singlespot=args.singlespot)
     print('Terminated processing of "%s"' % datafile, flush=True)
