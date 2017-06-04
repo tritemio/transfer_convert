@@ -73,6 +73,8 @@ def copy_files_to_archive(h5_fname, orig_fname, nb_conv_fname):
     dest_h5_fname = replace_basedir(h5_fname, temp_basedir, local_archive_basedir)
     dest_h5_fname.parent.mkdir(parents=True, exist_ok=True)
     dest_nb_conv_fname = replace_basedir(nb_conv_fname, temp_basedir, local_archive_basedir)
+    dest_nb_conv_fname = Path(dest_nb_conv_fname.parent, 'conversion',
+                              dest_nb_conv_fname.name)
     dest_orig_fname = replace_basedir(orig_fname, temp_basedir, local_archive_basedir)
 
     # Copy HDF5 file
@@ -109,9 +111,7 @@ def convert(filepath, basedir, inplace=False, singlespot=False):
     if singlespot:
         convert_notebook_name = convert_notebook_name_singlespot
         suffix = ''
-    nb_out_dir = Path(filepath.parent, 'conversion')
-    nb_out_dir.mkdir(exist_ok=True)
-    nb_out_path = Path(nb_out_dir,
+    nb_out_path = Path(filepath.parent,
                        filepath.stem + '%s_conversion.ipynb' % suffix)
 
     # Compute input file name relative to the basedir
