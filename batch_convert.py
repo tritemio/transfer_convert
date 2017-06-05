@@ -81,9 +81,13 @@ def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
 if __name__ == '__main__':
     import argparse
     descr = """\
-        This script monitors a folder and converts DAT files to Photon-HDF5
-        if a metadata YAML file with the same name (except extension) is found
-        in the same folder."""
+        This script converts files in batch to Photon-HDF5.
+        It can also monitor a folder for new files and convert them
+        on fly as they appear. For each data file there must be a metadata
+        YAML file with the same name (extension .yml) in the same folder.
+        The metadats file contains all the additional information required to
+        create a complete Photon-HDF5 file.
+        """
     parser = argparse.ArgumentParser(description=descr, epilog='\n')
 
     msg = """\
@@ -92,10 +96,10 @@ if __name__ == '__main__':
     parser.add_argument('--dry-run', action='store_true', help=msg)
 
     msg = """\
-        Process all the DAT/YML files in the folder (batch-mode). Without
-        this option only new files created after the monitor started are
-        processed."""
-    parser.add_argument('--batch', action='store_true', help=msg)
+        Monitor a folder and only convert/process new data files appearing
+        after the script is launched. Without this option,
+        all the data files in the specified folder will be processed."""
+    parser.add_argument('--monitor', action='store_true', help=msg)
 
     msg = "Perform conversion creating an additional temporary HDF5 file."
     parser.add_argument('--tempfile', action='store_true', help=msg)
@@ -133,8 +137,8 @@ if __name__ == '__main__':
                   inplace=not args.tempfile, singlespot=args.singlespot,
                   analyze=args.analyze, analyze_kws=analyze_kws,
                   remove=not args.keep_temp_files)
-    if args.batch:
-        batch_process(folder, **kwargs)
-    else:
+    if args.monitor:
         start_monitoring(folder, **kwargs)
+    else:
+        batch_process(folder, **kwargs)
     print('Monitor execution end.', flush=True)

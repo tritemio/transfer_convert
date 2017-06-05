@@ -1,25 +1,26 @@
 # transfer_convert
 
-A collection of scripts for automating conversion to Photon-HDF5, 
+A collection of scripts for automating conversion to Photon-HDF5,
 archival and analysis of smFRET measurements using multiprocessing (each file
 is processed in a different CPU).
 
 A brief description of each script follows.
 
-## monitor.py
+## batch_convert.py
 
-Monitor a given folder. When a new YAML file appears and there is a DAT file with the same
-name in the same folder it starts these processing steps:
+Convert all files in a specified folder in batch.
+If the `--monitor` argument is passed, monitors a given folder.
+When a new YAML file appears in the same folder with the same name as
+a data file, it starts these processing steps:
 
 - copy the data to a temp folder
 - convert data to Photon-HDF5 using the metadata from the YAML file
 - copy all files to and archival folder
 - optionally run smFRET analysis
 
-Many files can be processed in parallel if a new file appears when the processing
-of the previous file is not finished yet.
+Data files can be processed in parallel.
 
-Type `./monitor.py -h` for more info on how to use the script.
+Type `./batch_convert.py -h` for more info on how to use the script.
 
 ## batch_analyze.py
 
@@ -31,7 +32,7 @@ Type `./batch_analysis.py -h` for more info on how to use the script.
 
 ## analize.py
 
-Analyze a single Photon-HDF5 file using a the specified notebook. 
+Analyze a single Photon-HDF5 file using a the specified notebook.
 
 Type `./analyze.py -h` for more info on how to use the script.
 
@@ -39,8 +40,8 @@ Type `./analyze.py -h` for more info on how to use the script.
 ## transfer.py
 
 Module used for processing a single file (copy, conversion, analysis).
-The script `monitor.py` build a multiprocessing pool and calls functions 
-defined in `transfer.py` to process several files in parallel. 
+The script `monitor.py` build a multiprocessing pool and calls functions
+defined in `transfer.py` to process several files in parallel.
 
 # Installation
 
