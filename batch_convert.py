@@ -119,7 +119,8 @@ if __name__ == '__main__':
     parser.add_argument('--notebook', metavar='NB_NAME',
                         default=transfer.default_notebook_name, help=msg)
     parser.add_argument('--working-dir', metavar='PATH', default=None,
-                        help='Working dir for the kernel executing the notebook.')
+                        help='Working dir for the kernel executing the smFRET '
+                             'notebook.')
     parser.add_argument('--save-html', action='store_true',
                         help='Save a copy of the smFRET notebooks in HTML.')
     parser.add_argument('--keep-temp-files', action='store_true',

@@ -117,7 +117,7 @@ if __name__ == '__main__':
     parser.add_argument('--choose-files', action='store_true',
                         help='Select files interactively.')
     msg = ('Working dir for the kernel executing the notebook.\n'
-           'By default, uses the folder containing the data file.')
+           'By default, uses the folder containing the data files.')
     parser.add_argument('--working-dir', metavar='PATH', default=None, help=msg)
     msg = ("Pattern to select data files to be processed (globbing). "
            "Default is '*.hdf5' (including quotes), which selects all "
@@ -125,7 +125,8 @@ if __name__ == '__main__':
            "use '*.sm'. To process all the hdf5 in the specified folder and "
            "all subfolders use '**/*.hdf5'. The pattern can be anything "
            "accepted by pathlib.Path.glob().")
-    parser.add_argument('--glob', metavar='PATTERN', default='*.hdf5', help=msg)
+    parser.add_argument('--glob', metavar='PATTERN', default="'*.hdf5'",
+                        help=msg)
     args = parser.parse_args()
 
     folder = Path(args.folder)
