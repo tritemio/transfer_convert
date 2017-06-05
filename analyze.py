@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from pathlib import Path
 import nbrun
 
 default_notebook_name = 'smFRET-Quick-Test-Server.ipynb'
@@ -37,7 +38,6 @@ def run_analysis(data_filename, input_notebook=None, save_html=False,
 
 if __name__ == '__main__':
     import argparse
-    from pathlib import Path
 
     descr = """\
         This script executes an analysis notebook on the specified HDF5 file.
