@@ -7,10 +7,8 @@ from multiprocessing import Pool
 from analyze import run_analysis, default_notebook_name
 
 
-def get_file_list(folder, init_filelist=None, glob='*.hdf5'):
+def get_file_list(folder, glob='*.hdf5'):
     folder = Path(folder)
-    if init_filelist is None:
-        init_filelist = []
     return [f for f in folder.glob(glob)
             if not f.stem.endswith('_cache')]
 

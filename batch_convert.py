@@ -8,28 +8,26 @@ from multiprocessing import Pool
 import transfer
 
 
-def get_new_files(folder, init_filelist=None, ext='.dat'):
+def get_new_files(folder, init_filelist=None, glob='**/*.dat'):
     folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
-    return [f for f in folder.glob('**/*%s' % ext)
+    return [f for f in folder.glob(glob)
             if (f.with_suffix('.yml').is_file() and f not in init_filelist)]
 
 
 def complete_task(fname, dry_run=False):
     print('Completed processing for "%s" (callback)' % fname, flush=True)
-    #dest = transfer.replace_basedir(fname, transfer.temp_basedir,
-    #                                transfer.local_archive_basedir)
-    #transfer.filecopy(fname, dest) # filecopy does not have a dry_run arg
 
 
-def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
-                     remove=True, analyze_kws=None, singlespot=False):
+def start_monitoring(folder, dry_run=False, nproc=4, inplace=False,
+                     analyze=True, remove=True, analyze_kws=None,
+                     singlespot=False):
     title_msg = 'Monitoring files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
-    ext = '.sm' if singlespot else '.dat'
-    init_filelist = get_new_files(folder, ext=ext)
+    glob = '*.sm' if singlespot else '*.dat'
+    init_filelist = get_new_files(folder, glob=glob)
 
     print('- The following files are present at startup and will be skipped:')
     for f in init_filelist:
@@ -43,7 +41,7 @@ def start_monitoring(folder, dry_run=False, nproc=4, inplace=False, analyze=True
                 transfer.timestamp()
                 for i in range(20):
                     time.sleep(3)
-                    newfiles = get_new_files(folder, init_filelist, ext=ext)
+                    newfiles = get_new_files(folder, init_filelist, glob=glob)
                     for newfile in newfiles:
                         pool.apply_async(transfer.process_int,
                                          [newfile] + args,
@@ -61,8 +59,8 @@ def batch_process(folder, dry_run=False, nproc=4, inplace=False, analyze=True,
     title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
-    ext = '.sm' if singlespot else '.dat'
-    filelist = get_new_files(folder, ext=ext)
+    glob = '*.sm' if singlespot else '*.dat'
+    filelist = get_new_files(folder, glob=glob)
 
     print('- The following files will be processed in batch:')
     for f in filelist:
@@ -106,8 +104,9 @@ if __name__ == '__main__':
 
     parser.add_argument('folder',
                         help='Source folder with files to be processed.')
-    parser.add_argument('--num-processes', '-n', metavar='N', type=int, default=4,
-                        help='Number of multiprocess workers to use.')
+    parser.add_argument('--num-processes', '-n', metavar='N', type=int,
+                        default=4, help='Number of multiprocess workers to '
+                                        'use. Default 4.')
     parser.add_argument('--analyze', action='store_true',
                         help='Run smFRET analysis after files are converted.')
     parser.add_argument('--singlespot', action='store_true',
