@@ -7,28 +7,25 @@ from multiprocessing import Pool
 from analyze import run_analysis, default_notebook_name
 
 
-def get_file_list(folder, init_filelist=None, ext='hdf5', recurse=False):
+def get_file_list(folder, init_filelist=None, glob='*.hdf5'):
     folder = Path(folder)
     if init_filelist is None:
         init_filelist = []
-    pre = '**/' if recurse else ''
-    return [f for f in folder.glob('%s*.%s' % (pre, ext))
+    return [f for f in folder.glob(glob)
             if not f.stem.endswith('_cache')]
 
 
 def batch_process(folder, nproc=4, notebook=None, save_html=False,
-                  working_dir='./', interactive=False, ext='hdf5',
-                  recurse=False):
+                  working_dir='./', interactive=False, glob='*.hdf5'):
     assert folder.is_dir(), 'Path not found: %s' % folder
 
     title_msg = 'Processing files in folder: %s' % folder.name
     print('\n\n%s' % title_msg)
 
     if interactive:
-        filelist = get_file_selection_from_user(folder, ext=ext,
-                                                recurse=recurse)
+        filelist = get_file_selection_from_user(folder, glob=glob)
     else:
-        filelist = get_file_list(folder, ext=ext, recurse=recurse)
+        filelist = get_file_list(folder, glob=glob)
 
     print('\n- The following files will be processed:')
     for f in filelist:
@@ -44,10 +41,10 @@ def batch_process(folder, nproc=4, notebook=None, save_html=False,
     print('Closing subprocess pool.', flush=True)
 
 
-def get_file_selection_from_user(path, ext='hdf5', recurse=False):
+def get_file_selection_from_user(path, glob='*.hdf5'):
     """Get file selection interactively from the user."""
-    filelist = sorted(get_file_list(path, ext=ext, recurse=recurse))
-    print('Photon-HDF5 files in %s:\n' % path)
+    filelist = sorted(get_file_list(path, glob=glob))
+    print('Data files in %s:\n' % path)
     for i, f in enumerate(filelist):
         print('  [%d] %s' % (i, f.name), flush=True)
     print("\nChoose the file to analyze (integer, 'all' or ENTER to "
@@ -122,10 +119,13 @@ if __name__ == '__main__':
     msg = ('Working dir for the kernel executing the notebook.\n'
            'By default, uses the folder containing the data file.')
     parser.add_argument('--working-dir', metavar='PATH', default=None, help=msg)
-    parser.add_argument('--extension', metavar='DATA_FILE_EXT', default='hdf5',
-                        help='File extension of data files. Default hdf5.')
-    parser.add_argument('--recurse', action='store_true',
-                        help='Look also in subfolders for data files.')
+    msg = ("Pattern to select data files to be processed (globbing). "
+           "Default is '*.hdf5' (including quotes), which selects all "
+           "files with hdf5 extension. To process all the .sm files "
+           "use '*.sm'. To process all the hdf5 in the specified folder and "
+           "all subfolders use '**/*.hdf5'. The pattern can be anything "
+           "accepted by pathlib.Path.glob().")
+    parser.add_argument('--glob', metavar='PATTERN', default='*.hdf5', help=msg)
     args = parser.parse_args()
 
     folder = Path(args.folder)
@@ -137,8 +137,7 @@ if __name__ == '__main__':
     try:
         batch_process(folder, nproc=args.num_processes, notebook=args.notebook,
                       save_html=args.save_html, working_dir=args.working_dir,
-                      interactive=args.choose_files, ext=args.extension,
-                      recurse=args.recurse)
+                      interactive=args.choose_files, glob=args.glob[1:-1])
         print('Batch analysis completed.', flush=True)
     except KeyboardInterrupt:
         sys.exit('\n\nExecution terminated.\n')
